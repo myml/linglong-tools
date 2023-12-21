@@ -70,8 +70,8 @@ func infoRun() error {
 }
 
 func init() {
-	infoCmd.Flags().StringVar(&FormatOutput, "format", FormatOutput, "Format output using a custom template")
 	infoCmd.Flags().StringVarP(&LayerFile, "file", "f", LayerFile, "layer file")
+	infoCmd.Flags().StringVar(&FormatOutput, "format", FormatOutput, "Format output using a custom template")
 	infoCmd.Flags().BoolVarP(&PrettierOutput, "prettier", "p", PrettierOutput, "output pretty JSON")
 
 	err := infoCmd.MarkFlagRequired("file")
