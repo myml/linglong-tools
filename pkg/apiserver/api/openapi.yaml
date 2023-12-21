@@ -1,0 +1,354 @@
+openapi: 3.0.1
+info:
+  contact:
+    email: wurongjie@deepin.org
+    name: wrj97
+    url: https://linglong.dev
+  description: 玲珑仓库接口
+  termsOfService: https://www.deepin.org
+  title: linglong仓库
+servers:
+- url: /
+paths:
+  /api/v0/apps/fuzzysearchapp:
+    post:
+      operationId: FuzzySearchApp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/request.FuzzySearchReq'
+        description: app json数据
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuzzySearchApp_200_response'
+          description: OK
+      summary: 模糊查找App
+      tags:
+      - Client
+      x-codegen-request-body-name: data
+  /api/v1/repos/{repo}:
+    get:
+      description: returns repository mode and resolve all branches
+      operationId: GetRepo
+      parameters:
+      - description: 仓库名称
+        in: path
+        name: repo
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/GetRepo_200_response'
+          description: OK
+      summary: 查看仓库信息
+      tags:
+      - Client
+  /api/v1/sign-in:
+    post:
+      operationId: SignIn
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/request.Auth'
+        description: auth json数据
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SignIn_200_response'
+          description: OK
+      summary: 登陆帐号
+      tags:
+      - Client
+      x-codegen-request-body-name: data
+  /api/v1/upload-tasks:
+    post:
+      description: generate a new upload task id
+      operationId: NewUploadTaskID
+      parameters:
+      - description: 31a165ba1be6dec616b1f8f3207b4273
+        in: header
+        name: X-Token
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/schema.NewUploadTaskReq'
+        description: JSON数据
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/NewUploadTaskID_200_response'
+          description: OK
+      summary: generate a new upload task id
+      tags:
+      - Client
+      x-codegen-request-body-name: req
+  /api/v1/upload-tasks/{task_id}/layer:
+    put:
+      operationId: UploadTaskLayerFile
+      parameters:
+      - description: 31a165ba1be6dec616b1f8f3207b4273
+        in: header
+        name: X-Token
+        required: true
+        schema:
+          type: string
+      - description: task id
+        in: path
+        name: task_id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadTaskLayerFile_request'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UploadTaskLayerFile_200_response'
+          description: OK
+      summary: upload layer file to upload task
+      tags:
+      - Client
+  /api/v1/upload-tasks/{task_id}/status:
+    get:
+      description: get upload task status
+      operationId: UploadTaskInfo
+      parameters:
+      - description: 31a165ba1be6dec616b1f8f3207b4273
+        in: header
+        name: X-Token
+        required: true
+        schema:
+          type: string
+      - description: task id
+        in: path
+        name: task_id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UploadTaskInfo_200_response'
+          description: OK
+      summary: get upload task status
+      tags:
+      - Client
+  /api/v1/upload-tasks/{task_id}/tar:
+    put:
+      description: upload tgz file to upload task
+      operationId: UploadTaskFile
+      parameters:
+      - description: 31a165ba1be6dec616b1f8f3207b4273
+        in: header
+        name: X-Token
+        required: true
+        schema:
+          type: string
+      - description: task id
+        in: path
+        name: task_id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadTaskLayerFile_request'
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UploadTaskLayerFile_200_response'
+          description: OK
+      summary: upload tgz file to upload task
+      tags:
+      - Client
+components:
+  schemas:
+    api.JSONResult:
+      properties:
+        code:
+          type: integer
+        data:
+          type: object
+        msg:
+          type: string
+        trace_id:
+          type: string
+      type: object
+    request.Auth:
+      properties:
+        password:
+          example: ut12345678
+          type: string
+        username:
+          example: ut12345678
+          type: string
+      type: object
+    request.FuzzySearchReq:
+      properties:
+        appId:
+          type: string
+        arch:
+          type: string
+        repoName:
+          type: string
+        version:
+          type: string
+      type: object
+    request.RegisterStruct:
+      properties:
+        appId:
+          type: string
+        arch:
+          type: string
+        channel:
+          type: string
+        description:
+          type: string
+        kind:
+          type: string
+        module:
+          type: string
+        name:
+          type: string
+        repoName:
+          type: string
+        runtime:
+          type: string
+        size:
+          type: integer
+        uabUrl:
+          type: string
+        version:
+          type: string
+      type: object
+    response.NewUploadTaskResp:
+      properties:
+        id:
+          type: string
+      type: object
+    response.SignIn:
+      properties:
+        token:
+          type: string
+      type: object
+    response.UploadTaskResp:
+      properties:
+        watchId:
+          type: string
+      type: object
+    response.UploadTaskStatusInfo:
+      properties:
+        status:
+          type: string
+      type: object
+    schema.NewUploadTaskReq:
+      properties:
+        ref:
+          type: string
+        repoName:
+          type: string
+      type: object
+    schema.RepoInfo:
+      properties:
+        mode:
+          type: string
+        name:
+          type: string
+        refs:
+          items:
+            type: string
+          type: array
+      type: object
+    FuzzySearchApp_200_response:
+      allOf:
+      - $ref: '#/components/schemas/api.JSONResult'
+      - properties:
+          data:
+            items:
+              $ref: '#/components/schemas/request.RegisterStruct'
+            type: array
+        type: object
+    GetRepo_200_response:
+      allOf:
+      - $ref: '#/components/schemas/api.JSONResult'
+      - properties:
+          data:
+            $ref: '#/components/schemas/schema.RepoInfo'
+        type: object
+    SignIn_200_response:
+      allOf:
+      - $ref: '#/components/schemas/api.JSONResult'
+      - properties:
+          data:
+            $ref: '#/components/schemas/response.SignIn'
+        type: object
+    NewUploadTaskID_200_response:
+      allOf:
+      - $ref: '#/components/schemas/api.JSONResult'
+      - properties:
+          data:
+            $ref: '#/components/schemas/response.NewUploadTaskResp'
+        type: object
+    UploadTaskLayerFile_request:
+      properties:
+        file:
+          description: 文件路径
+          format: binary
+          type: string
+      required:
+      - file
+      type: object
+    UploadTaskLayerFile_200_response:
+      allOf:
+      - $ref: '#/components/schemas/api.JSONResult'
+      - properties:
+          data:
+            $ref: '#/components/schemas/response.UploadTaskResp'
+        type: object
+    UploadTaskInfo_200_response:
+      allOf:
+      - $ref: '#/components/schemas/api.JSONResult'
+      - properties:
+          data:
+            $ref: '#/components/schemas/response.UploadTaskStatusInfo'
+        type: object
+  securitySchemes:
+    Token:
+      description: '"调用sign-in后获取的token"'
+      in: header
+      name: X-Token
+      type: apiKey
+x-original-swagger-version: "2.0"
