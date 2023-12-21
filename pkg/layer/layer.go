@@ -11,12 +11,18 @@ import (
 // ParseMetaInfo parse layer metainfo
 // layer file format <head(chars 40 byte)> <json payload size(uint32 4 byte)> <json payload(varchar)> <erofs image>
 func ParseMetaInfo(r io.Reader) (*MetaInfo, error) {
+	var buff bytes.Buffer
+	_, err := io.CopyN(&buff, r, int64(40))
+	if err != nil {
+		return nil, fmt.Errorf("read head: %w", err)
+	}
+	head := buff.String()
+	buff.Reset()
 	var size uint32
-	err := binary.Read(r, binary.LittleEndian, &size)
+	err = binary.Read(r, binary.LittleEndian, &size)
 	if err != nil {
 		return nil, fmt.Errorf("read info size: %w", err)
 	}
-	var buff bytes.Buffer
 	_, err = io.CopyN(&buff, r, int64(size))
 	if err != nil {
 		return nil, fmt.Errorf("read info data: %w", err)
@@ -26,6 +32,7 @@ func ParseMetaInfo(r io.Reader) (*MetaInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal info data: %w", err)
 	}
+	info.Head = head
 	info.Raw = buff.String()
 	return &info, nil
 }
