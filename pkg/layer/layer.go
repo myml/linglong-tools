@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 )
 
 // ParseMetaInfo parse layer metainfo
@@ -32,7 +33,7 @@ func ParseMetaInfo(r io.Reader) (*MetaInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal info data: %w", err)
 	}
-	info.Head = head
+	info.Head = strings.TrimSpace(head)
 	info.Raw = buff.String()
 	return &info, nil
 }
