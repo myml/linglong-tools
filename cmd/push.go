@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -45,7 +42,7 @@ linglong-tools push -f ./test.layer -r https://repo.linglong.dev -n develop-snip
 			printStatus()
 			return
 		}
-		err := pushRun(context.Background(), pushArgs)
+		err := PushRun(context.Background(), pushArgs)
 		if err != nil {
 			var apiError *apiserver.GenericOpenAPIError
 			if errors.As(err, &apiError) {
@@ -57,7 +54,7 @@ linglong-tools push -f ./test.layer -r https://repo.linglong.dev -n develop-snip
 	},
 }
 
-func pushRun(ctx context.Context, args PushArgs) error {
+func PushRun(ctx context.Context, args PushArgs) error {
 	f, err := os.Open(args.LayerFile)
 	if err != nil {
 		return fmt.Errorf("open layer file: %w", err)
@@ -67,6 +64,7 @@ func pushRun(ctx context.Context, args PushArgs) error {
 	if err != nil {
 		return fmt.Errorf("parse layer info: %w", err)
 	}
+	log.Printf("%#v", info)
 	_, err = f.Seek(0, 0)
 	if err != nil {
 		return fmt.Errorf("file seek: %w", err)
@@ -94,6 +92,9 @@ func pushRun(ctx context.Context, args PushArgs) error {
 	if err != nil {
 		return fmt.Errorf("sign in: %w", err)
 	}
+	if loginResp.GetData().Token == nil {
+		return fmt.Errorf("token is null: %s", loginResp.GetMsg())
+	}
 	ref := fmt.Sprintf("%v/%v/%v/%v/%v",
 		args.RepoChannel,
 		info.Info.Appid,
@@ -103,21 +104,27 @@ func pushRun(ctx context.Context, args PushArgs) error {
 	)
 	log.Println(UploadTaskStatusCreating)
 	taskReq := apiserver.SchemaNewUploadTaskReq{RepoName: &args.RepoName, Ref: &ref}
-	newTaskResp, _, err := api.ClientAPI.NewUploadTaskID(ctx).Req(taskReq).XToken(*loginResp.Data.Token).Execute()
+	newTaskResp, _, err := api.ClientAPI.NewUploadTaskID(ctx).Req(taskReq).XToken(loginResp.Data.GetToken()).Execute()
 	if err != nil {
 		return fmt.Errorf("create upload task: %w", err)
 	}
+	if newTaskResp.GetData().Id == nil {
+		return fmt.Errorf("task id is null: %s", loginResp.GetMsg())
+	}
 	log.Println(UploadTaskStatusUploading)
-	_, _, err = api.ClientAPI.UploadTaskLayerFile(ctx, *newTaskResp.Data.Id).XToken(*loginResp.Data.Token).File(f).Execute()
+	_, _, err = api.ClientAPI.UploadTaskLayerFile(ctx, *newTaskResp.Data.Id).XToken(loginResp.Data.GetToken()).File(f).Execute()
 	if err != nil {
 		return fmt.Errorf("upload layer file: %w", err)
 	}
 	status := ""
 	for {
 		time.Sleep(time.Second)
-		taskInfoResp, _, err := api.ClientAPI.UploadTaskInfo(ctx, *newTaskResp.Data.Id).XToken(*loginResp.Data.Token).Execute()
+		taskInfoResp, _, err := api.ClientAPI.UploadTaskInfo(ctx, *newTaskResp.Data.Id).XToken(loginResp.Data.GetToken()).Execute()
 		if err != nil {
 			return fmt.Errorf("get task info: %w", err)
+		}
+		if taskInfoResp.GetData().Status == nil {
+			return fmt.Errorf("task status is null: %s", taskInfoResp.GetMsg())
 		}
 		latest := taskInfoResp.Data.GetStatus()
 		if status != latest {
@@ -134,7 +141,8 @@ func pushRun(ctx context.Context, args PushArgs) error {
 }
 
 func printStatus() {
-	statusList := map[UploadTaskStatus]string{
+	// TODO(wurongjie) 给每个状态补充介绍
+	statusMap := map[UploadTaskStatus]string{
 		UploadTaskStatusLogging:   "",
 		UploadTaskStatusCreating:  "",
 		UploadTaskStatusUploading: "",
@@ -145,8 +153,8 @@ func printStatus() {
 		UploadTaskStatusCommitted: "",
 		UploadTaskStatusFailed:    "",
 	}
-	for i := range statusList {
-		log.Println(statusList[i])
+	for status := range statusMap {
+		log.Println(status)
 	}
 }
 

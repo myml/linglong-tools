@@ -39,10 +39,11 @@ func ParseMetaInfo(r io.Reader) (*MetaInfo, error) {
 }
 
 type MetaInfo struct {
-	Head    string  `json:"head"`
 	Info    AppInfo `json:"info"`
 	Version string  `json:"version"`
-	Raw     string  `json:"raw"`
+
+	Head string `json:"head,omitempty"`
+	Raw  string `json:"raw,omitempty"`
 }
 
 type AppInfo struct {

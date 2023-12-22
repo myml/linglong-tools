@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -31,14 +28,14 @@ linglong-tools info -f ./test.layer --format '{{ .Raw }}'
 linglong-tools info -f ./test.layer --format '{{ .Info.Appid }}'
 linglong-tools info -f ./test.layer --format '{{ index .Info.Arch 0 }}'`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := infoRun(infoArgs)
+		err := InfoRun(infoArgs)
 		if err != nil {
 			log.Fatalln(err)
 		}
 	},
 }
 
-func infoRun(args InfoArgs) error {
+func InfoRun(args InfoArgs) error {
 	// 打开文件
 	f, err := os.Open(args.LayerFile)
 	if err != nil {
