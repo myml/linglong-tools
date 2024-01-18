@@ -86,7 +86,7 @@ func PushRun(ctx context.Context, args PushArgs) error {
 	cfg.Host = u.Host
 	api := apiserver.NewAPIClient(cfg)
 
-	log.Println(UploadTaskStatusLogging)
+	log.Println(UploadTaskStatusLogining)
 	authReq := apiserver.RequestAuth{Username: &username, Password: &password}
 	loginResp, _, err := api.ClientAPI.SignIn(ctx).Data(authReq).Execute()
 	if err != nil {
@@ -141,20 +141,22 @@ func PushRun(ctx context.Context, args PushArgs) error {
 }
 
 func printStatus() {
-	// TODO(wurongjie) 给每个状态补充介绍
-	statusMap := map[UploadTaskStatus]string{
-		UploadTaskStatusLogging:   "",
-		UploadTaskStatusCreating:  "",
-		UploadTaskStatusUploading: "",
-		UploadTaskStatusPending:   "",
-		UploadTaskStatusUploaded:  "",
-		UploadTaskStatusComplete:  "",
-		UploadTaskStatusExtracted: "",
-		UploadTaskStatusCommitted: "",
-		UploadTaskStatusFailed:    "",
+	statusList := []struct {
+		status UploadTaskStatus
+		desc   string
+	}{
+		{UploadTaskStatusLogining, "正在登录"},
+		{UploadTaskStatusCreating, "正在创建上传任务"},
+		{UploadTaskStatusPending, "正在等待上传"},
+		{UploadTaskStatusUploading, "正在上传文件"},
+		{UploadTaskStatusUploaded, "上传文件完成"},
+		{UploadTaskStatusExtracted, "已解压上传的文件"},
+		{UploadTaskStatusCommitted, "已提交上传的文件"},
+		{UploadTaskStatusComplete, "上传任务完成"},
+		{UploadTaskStatusFailed, "上传任务失败"},
 	}
-	for status := range statusMap {
-		log.Println(status)
+	for _, status := range statusList {
+		fmt.Println(status.status, "->", status.desc)
 	}
 }
 
@@ -162,7 +164,7 @@ type UploadTaskStatus string
 
 var (
 	/*** client status ***/
-	UploadTaskStatusLogging   UploadTaskStatus = "logging"
+	UploadTaskStatusLogining  UploadTaskStatus = "logining"
 	UploadTaskStatusCreating  UploadTaskStatus = "creating"
 	UploadTaskStatusUploading UploadTaskStatus = "uploading"
 
