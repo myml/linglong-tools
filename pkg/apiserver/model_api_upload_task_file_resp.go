@@ -15,36 +15,36 @@ import (
 	"encoding/json"
 )
 
-// checks if the UploadTaskLayerFile200Response type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &UploadTaskLayerFile200Response{}
+// checks if the ApiUploadTaskFileResp type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &ApiUploadTaskFileResp{}
 
-// UploadTaskLayerFile200Response struct for UploadTaskLayerFile200Response
-type UploadTaskLayerFile200Response struct {
+// ApiUploadTaskFileResp struct for ApiUploadTaskFileResp
+type ApiUploadTaskFileResp struct {
 	Code *int32 `json:"code,omitempty"`
 	Data *ResponseUploadTaskResp `json:"data,omitempty"`
 	Msg *string `json:"msg,omitempty"`
 	TraceId *string `json:"trace_id,omitempty"`
 }
 
-// NewUploadTaskLayerFile200Response instantiates a new UploadTaskLayerFile200Response object
+// NewApiUploadTaskFileResp instantiates a new ApiUploadTaskFileResp object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUploadTaskLayerFile200Response() *UploadTaskLayerFile200Response {
-	this := UploadTaskLayerFile200Response{}
+func NewApiUploadTaskFileResp() *ApiUploadTaskFileResp {
+	this := ApiUploadTaskFileResp{}
 	return &this
 }
 
-// NewUploadTaskLayerFile200ResponseWithDefaults instantiates a new UploadTaskLayerFile200Response object
+// NewApiUploadTaskFileRespWithDefaults instantiates a new ApiUploadTaskFileResp object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewUploadTaskLayerFile200ResponseWithDefaults() *UploadTaskLayerFile200Response {
-	this := UploadTaskLayerFile200Response{}
+func NewApiUploadTaskFileRespWithDefaults() *ApiUploadTaskFileResp {
+	this := ApiUploadTaskFileResp{}
 	return &this
 }
 
 // GetCode returns the Code field value if set, zero value otherwise.
-func (o *UploadTaskLayerFile200Response) GetCode() int32 {
+func (o *ApiUploadTaskFileResp) GetCode() int32 {
 	if o == nil || IsNil(o.Code) {
 		var ret int32
 		return ret
@@ -54,7 +54,7 @@ func (o *UploadTaskLayerFile200Response) GetCode() int32 {
 
 // GetCodeOk returns a tuple with the Code field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *UploadTaskLayerFile200Response) GetCodeOk() (*int32, bool) {
+func (o *ApiUploadTaskFileResp) GetCodeOk() (*int32, bool) {
 	if o == nil || IsNil(o.Code) {
 		return nil, false
 	}
@@ -62,7 +62,7 @@ func (o *UploadTaskLayerFile200Response) GetCodeOk() (*int32, bool) {
 }
 
 // HasCode returns a boolean if a field has been set.
-func (o *UploadTaskLayerFile200Response) HasCode() bool {
+func (o *ApiUploadTaskFileResp) HasCode() bool {
 	if o != nil && !IsNil(o.Code) {
 		return true
 	}
@@ -71,12 +71,12 @@ func (o *UploadTaskLayerFile200Response) HasCode() bool {
 }
 
 // SetCode gets a reference to the given int32 and assigns it to the Code field.
-func (o *UploadTaskLayerFile200Response) SetCode(v int32) {
+func (o *ApiUploadTaskFileResp) SetCode(v int32) {
 	o.Code = &v
 }
 
 // GetData returns the Data field value if set, zero value otherwise.
-func (o *UploadTaskLayerFile200Response) GetData() ResponseUploadTaskResp {
+func (o *ApiUploadTaskFileResp) GetData() ResponseUploadTaskResp {
 	if o == nil || IsNil(o.Data) {
 		var ret ResponseUploadTaskResp
 		return ret
@@ -86,7 +86,7 @@ func (o *UploadTaskLayerFile200Response) GetData() ResponseUploadTaskResp {
 
 // GetDataOk returns a tuple with the Data field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *UploadTaskLayerFile200Response) GetDataOk() (*ResponseUploadTaskResp, bool) {
+func (o *ApiUploadTaskFileResp) GetDataOk() (*ResponseUploadTaskResp, bool) {
 	if o == nil || IsNil(o.Data) {
 		return nil, false
 	}
@@ -94,7 +94,7 @@ func (o *UploadTaskLayerFile200Response) GetDataOk() (*ResponseUploadTaskResp, b
 }
 
 // HasData returns a boolean if a field has been set.
-func (o *UploadTaskLayerFile200Response) HasData() bool {
+func (o *ApiUploadTaskFileResp) HasData() bool {
 	if o != nil && !IsNil(o.Data) {
 		return true
 	}
@@ -103,12 +103,12 @@ func (o *UploadTaskLayerFile200Response) HasData() bool {
 }
 
 // SetData gets a reference to the given ResponseUploadTaskResp and assigns it to the Data field.
-func (o *UploadTaskLayerFile200Response) SetData(v ResponseUploadTaskResp) {
+func (o *ApiUploadTaskFileResp) SetData(v ResponseUploadTaskResp) {
 	o.Data = &v
 }
 
 // GetMsg returns the Msg field value if set, zero value otherwise.
-func (o *UploadTaskLayerFile200Response) GetMsg() string {
+func (o *ApiUploadTaskFileResp) GetMsg() string {
 	if o == nil || IsNil(o.Msg) {
 		var ret string
 		return ret
@@ -118,7 +118,7 @@ func (o *UploadTaskLayerFile200Response) GetMsg() string {
 
 // GetMsgOk returns a tuple with the Msg field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *UploadTaskLayerFile200Response) GetMsgOk() (*string, bool) {
+func (o *ApiUploadTaskFileResp) GetMsgOk() (*string, bool) {
 	if o == nil || IsNil(o.Msg) {
 		return nil, false
 	}
@@ -126,7 +126,7 @@ func (o *UploadTaskLayerFile200Response) GetMsgOk() (*string, bool) {
 }
 
 // HasMsg returns a boolean if a field has been set.
-func (o *UploadTaskLayerFile200Response) HasMsg() bool {
+func (o *ApiUploadTaskFileResp) HasMsg() bool {
 	if o != nil && !IsNil(o.Msg) {
 		return true
 	}
@@ -135,12 +135,12 @@ func (o *UploadTaskLayerFile200Response) HasMsg() bool {
 }
 
 // SetMsg gets a reference to the given string and assigns it to the Msg field.
-func (o *UploadTaskLayerFile200Response) SetMsg(v string) {
+func (o *ApiUploadTaskFileResp) SetMsg(v string) {
 	o.Msg = &v
 }
 
 // GetTraceId returns the TraceId field value if set, zero value otherwise.
-func (o *UploadTaskLayerFile200Response) GetTraceId() string {
+func (o *ApiUploadTaskFileResp) GetTraceId() string {
 	if o == nil || IsNil(o.TraceId) {
 		var ret string
 		return ret
@@ -150,7 +150,7 @@ func (o *UploadTaskLayerFile200Response) GetTraceId() string {
 
 // GetTraceIdOk returns a tuple with the TraceId field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *UploadTaskLayerFile200Response) GetTraceIdOk() (*string, bool) {
+func (o *ApiUploadTaskFileResp) GetTraceIdOk() (*string, bool) {
 	if o == nil || IsNil(o.TraceId) {
 		return nil, false
 	}
@@ -158,7 +158,7 @@ func (o *UploadTaskLayerFile200Response) GetTraceIdOk() (*string, bool) {
 }
 
 // HasTraceId returns a boolean if a field has been set.
-func (o *UploadTaskLayerFile200Response) HasTraceId() bool {
+func (o *ApiUploadTaskFileResp) HasTraceId() bool {
 	if o != nil && !IsNil(o.TraceId) {
 		return true
 	}
@@ -167,11 +167,11 @@ func (o *UploadTaskLayerFile200Response) HasTraceId() bool {
 }
 
 // SetTraceId gets a reference to the given string and assigns it to the TraceId field.
-func (o *UploadTaskLayerFile200Response) SetTraceId(v string) {
+func (o *ApiUploadTaskFileResp) SetTraceId(v string) {
 	o.TraceId = &v
 }
 
-func (o UploadTaskLayerFile200Response) MarshalJSON() ([]byte, error) {
+func (o ApiUploadTaskFileResp) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -179,7 +179,7 @@ func (o UploadTaskLayerFile200Response) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o UploadTaskLayerFile200Response) ToMap() (map[string]interface{}, error) {
+func (o ApiUploadTaskFileResp) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Code) {
 		toSerialize["code"] = o.Code
@@ -196,38 +196,38 @@ func (o UploadTaskLayerFile200Response) ToMap() (map[string]interface{}, error) 
 	return toSerialize, nil
 }
 
-type NullableUploadTaskLayerFile200Response struct {
-	value *UploadTaskLayerFile200Response
+type NullableApiUploadTaskFileResp struct {
+	value *ApiUploadTaskFileResp
 	isSet bool
 }
 
-func (v NullableUploadTaskLayerFile200Response) Get() *UploadTaskLayerFile200Response {
+func (v NullableApiUploadTaskFileResp) Get() *ApiUploadTaskFileResp {
 	return v.value
 }
 
-func (v *NullableUploadTaskLayerFile200Response) Set(val *UploadTaskLayerFile200Response) {
+func (v *NullableApiUploadTaskFileResp) Set(val *ApiUploadTaskFileResp) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableUploadTaskLayerFile200Response) IsSet() bool {
+func (v NullableApiUploadTaskFileResp) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableUploadTaskLayerFile200Response) Unset() {
+func (v *NullableApiUploadTaskFileResp) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableUploadTaskLayerFile200Response(val *UploadTaskLayerFile200Response) *NullableUploadTaskLayerFile200Response {
-	return &NullableUploadTaskLayerFile200Response{value: val, isSet: true}
+func NewNullableApiUploadTaskFileResp(val *ApiUploadTaskFileResp) *NullableApiUploadTaskFileResp {
+	return &NullableApiUploadTaskFileResp{value: val, isSet: true}
 }
 
-func (v NullableUploadTaskLayerFile200Response) MarshalJSON() ([]byte, error) {
+func (v NullableApiUploadTaskFileResp) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableUploadTaskLayerFile200Response) UnmarshalJSON(src []byte) error {
+func (v *NullableApiUploadTaskFileResp) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

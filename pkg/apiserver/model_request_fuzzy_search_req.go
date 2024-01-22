@@ -22,6 +22,7 @@ var _ MappedNullable = &RequestFuzzySearchReq{}
 type RequestFuzzySearchReq struct {
 	AppId *string `json:"appId,omitempty"`
 	Arch *string `json:"arch,omitempty"`
+	Channel *string `json:"channel,omitempty"`
 	RepoName *string `json:"repoName,omitempty"`
 	Version *string `json:"version,omitempty"`
 }
@@ -107,6 +108,38 @@ func (o *RequestFuzzySearchReq) SetArch(v string) {
 	o.Arch = &v
 }
 
+// GetChannel returns the Channel field value if set, zero value otherwise.
+func (o *RequestFuzzySearchReq) GetChannel() string {
+	if o == nil || IsNil(o.Channel) {
+		var ret string
+		return ret
+	}
+	return *o.Channel
+}
+
+// GetChannelOk returns a tuple with the Channel field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *RequestFuzzySearchReq) GetChannelOk() (*string, bool) {
+	if o == nil || IsNil(o.Channel) {
+		return nil, false
+	}
+	return o.Channel, true
+}
+
+// HasChannel returns a boolean if a field has been set.
+func (o *RequestFuzzySearchReq) HasChannel() bool {
+	if o != nil && !IsNil(o.Channel) {
+		return true
+	}
+
+	return false
+}
+
+// SetChannel gets a reference to the given string and assigns it to the Channel field.
+func (o *RequestFuzzySearchReq) SetChannel(v string) {
+	o.Channel = &v
+}
+
 // GetRepoName returns the RepoName field value if set, zero value otherwise.
 func (o *RequestFuzzySearchReq) GetRepoName() string {
 	if o == nil || IsNil(o.RepoName) {
@@ -186,6 +219,9 @@ func (o RequestFuzzySearchReq) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Arch) {
 		toSerialize["arch"] = o.Arch
+	}
+	if !IsNil(o.Channel) {
+		toSerialize["channel"] = o.Channel
 	}
 	if !IsNil(o.RepoName) {
 		toSerialize["repoName"] = o.RepoName

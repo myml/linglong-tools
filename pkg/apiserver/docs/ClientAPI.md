@@ -7,6 +7,7 @@ Method | HTTP request | Description
 [**FuzzySearchApp**](ClientAPI.md#FuzzySearchApp) | **Post** /api/v0/apps/fuzzysearchapp | 模糊查找App
 [**GetRepo**](ClientAPI.md#GetRepo) | **Get** /api/v1/repos/{repo} | 查看仓库信息
 [**NewUploadTaskID**](ClientAPI.md#NewUploadTaskID) | **Post** /api/v1/upload-tasks | generate a new upload task id
+[**SearchApp**](ClientAPI.md#SearchApp) | **Post** /api/v0/apps/searchapp | 查找App
 [**SignIn**](ClientAPI.md#SignIn) | **Post** /api/v1/sign-in | 登陆帐号
 [**UploadTaskFile**](ClientAPI.md#UploadTaskFile) | **Put** /api/v1/upload-tasks/{task_id}/tar | upload tgz file to upload task
 [**UploadTaskInfo**](ClientAPI.md#UploadTaskInfo) | **Get** /api/v1/upload-tasks/{task_id}/status | get upload task status
@@ -216,6 +217,70 @@ No authorization required
 [[Back to README]](../README.md)
 
 
+## SearchApp
+
+> SearchApp200Response SearchApp(ctx).Data(data).Execute()
+
+查找App
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+    data := *openapiclient.NewModelApp() // ModelApp | app json数据
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    resp, r, err := apiClient.ClientAPI.SearchApp(context.Background()).Data(data).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `ClientAPI.SearchApp``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `SearchApp`: SearchApp200Response
+    fmt.Fprintf(os.Stdout, "Response from `ClientAPI.SearchApp`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiSearchAppRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **data** | [**ModelApp**](ModelApp.md) | app json数据 | 
+
+### Return type
+
+[**SearchApp200Response**](SearchApp200Response.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
 ## SignIn
 
 > SignIn200Response SignIn(ctx).Data(data).Execute()
@@ -282,7 +347,7 @@ No authorization required
 
 ## UploadTaskFile
 
-> UploadTaskLayerFile200Response UploadTaskFile(ctx, taskId).XToken(xToken).File(file).Execute()
+> ApiUploadTaskFileResp UploadTaskFile(ctx, taskId).XToken(xToken).File(file).Execute()
 
 upload tgz file to upload task
 
@@ -312,7 +377,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ClientAPI.UploadTaskFile``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `UploadTaskFile`: UploadTaskLayerFile200Response
+    // response from `UploadTaskFile`: ApiUploadTaskFileResp
     fmt.Fprintf(os.Stdout, "Response from `ClientAPI.UploadTaskFile`: %v\n", resp)
 }
 ```
@@ -338,7 +403,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**UploadTaskLayerFile200Response**](UploadTaskLayerFile200Response.md)
+[**ApiUploadTaskFileResp**](ApiUploadTaskFileResp.md)
 
 ### Authorization
 
@@ -428,7 +493,7 @@ No authorization required
 
 ## UploadTaskLayerFile
 
-> UploadTaskLayerFile200Response UploadTaskLayerFile(ctx, taskId).XToken(xToken).File(file).Execute()
+> ApiUploadTaskLayerFileResp UploadTaskLayerFile(ctx, taskId).XToken(xToken).File(file).Execute()
 
 upload layer file to upload task
 
@@ -456,7 +521,7 @@ func main() {
         fmt.Fprintf(os.Stderr, "Error when calling `ClientAPI.UploadTaskLayerFile``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `UploadTaskLayerFile`: UploadTaskLayerFile200Response
+    // response from `UploadTaskLayerFile`: ApiUploadTaskLayerFileResp
     fmt.Fprintf(os.Stdout, "Response from `ClientAPI.UploadTaskLayerFile`: %v\n", resp)
 }
 ```
@@ -482,7 +547,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**UploadTaskLayerFile200Response**](UploadTaskLayerFile200Response.md)
+[**ApiUploadTaskLayerFileResp**](ApiUploadTaskLayerFileResp.md)
 
 ### Authorization
 

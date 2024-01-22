@@ -6,6 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **AppId** | Pointer to **string** |  | [optional] 
 **Arch** | Pointer to **string** |  | [optional] 
+**Channel** | Pointer to **string** |  | [optional] 
 **RepoName** | Pointer to **string** |  | [optional] 
 **Version** | Pointer to **string** |  | [optional] 
 
@@ -77,6 +78,31 @@ SetArch sets Arch field to given value.
 `func (o *RequestFuzzySearchReq) HasArch() bool`
 
 HasArch returns a boolean if a field has been set.
+
+### GetChannel
+
+`func (o *RequestFuzzySearchReq) GetChannel() string`
+
+GetChannel returns the Channel field if non-nil, zero value otherwise.
+
+### GetChannelOk
+
+`func (o *RequestFuzzySearchReq) GetChannelOk() (*string, bool)`
+
+GetChannelOk returns a tuple with the Channel field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetChannel
+
+`func (o *RequestFuzzySearchReq) SetChannel(v string)`
+
+SetChannel sets Channel field to given value.
+
+### HasChannel
+
+`func (o *RequestFuzzySearchReq) HasChannel() bool`
+
+HasChannel returns a boolean if a field has been set.
 
 ### GetRepoName
 

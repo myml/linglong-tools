@@ -31,6 +31,27 @@ paths:
       tags:
       - Client
       x-codegen-request-body-name: data
+  /api/v0/apps/searchapp:
+    post:
+      operationId: SearchApp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/model.App'
+        description: app json数据
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchApp_200_response'
+          description: OK
+      summary: 查找App
+      tags:
+      - Client
+      x-codegen-request-body-name: data
   /api/v1/repos/{repo}:
     get:
       description: returns repository mode and resolve all branches
@@ -129,7 +150,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/UploadTaskLayerFile_200_response'
+                $ref: '#/components/schemas/api.UploadTaskLayerFileResp'
           description: OK
       summary: upload layer file to upload task
       tags:
@@ -189,7 +210,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/UploadTaskLayerFile_200_response'
+                $ref: '#/components/schemas/api.UploadTaskFileResp'
           description: OK
       summary: upload tgz file to upload task
       tags:
@@ -207,6 +228,101 @@ components:
         trace_id:
           type: string
       type: object
+    api.UploadTaskFileResp:
+      example:
+        msg: msg
+        trace_id: trace_id
+        code: 0
+        data:
+          watchId: watchId
+      properties:
+        code:
+          type: integer
+        data:
+          $ref: '#/components/schemas/response.UploadTaskResp'
+        msg:
+          type: string
+        trace_id:
+          type: string
+      type: object
+    api.UploadTaskLayerFileResp:
+      example:
+        msg: msg
+        trace_id: trace_id
+        code: 0
+        data:
+          watchId: watchId
+      properties:
+        code:
+          type: integer
+        data:
+          $ref: '#/components/schemas/response.UploadTaskResp'
+        msg:
+          type: string
+        trace_id:
+          type: string
+      type: object
+    gorm.DeletedAt:
+      properties:
+        time:
+          type: string
+        valid:
+          description: Valid is true if Time is not NULL
+          type: boolean
+      type: object
+    model.App:
+      properties:
+        appId:
+          description: AppID             e.g. org.deepin.test
+          type: string
+        arch:
+          description: "CPU Architecture, e.g. x86_64"
+          type: string
+        channel:
+          description: e.g. stable
+          type: string
+        checkSum:
+          description: "checksum, commit id"
+          type: string
+        createdAt:
+          type: string
+        deletedAt:
+          $ref: '#/components/schemas/gorm.DeletedAt'
+        description:
+          description: description
+          type: string
+        id:
+          type: integer
+        kind:
+          description: kind
+          type: string
+        module:
+          description: e.g. binary
+          type: string
+        name:
+          description: App Name          e.g. Deepin Music
+          type: string
+        repoName:
+          description: repo name
+          type: string
+        runtime:
+          description: runtime
+          type: string
+        size:
+          description: size
+          type: integer
+        uab_url:
+          description: deprecated
+          type: string
+        updatedAt:
+          type: string
+        uuid:
+          description: 为了兼容旧接口，商店需要uuid做主键
+          type: string
+        version:
+          description: App Version       e.g. 0.0.1
+          type: string
+      type: object
     request.Auth:
       properties:
         password:
@@ -221,6 +337,8 @@ components:
         appId:
           type: string
         arch:
+          type: string
+        channel:
           type: string
         repoName:
           type: string
@@ -265,6 +383,8 @@ components:
           type: string
       type: object
     response.UploadTaskResp:
+      example:
+        watchId: watchId
       properties:
         watchId:
           type: string
@@ -301,6 +421,13 @@ components:
               $ref: '#/components/schemas/request.RegisterStruct'
             type: array
         type: object
+    SearchApp_200_response:
+      allOf:
+      - $ref: '#/components/schemas/api.JSONResult'
+      - properties:
+          data:
+            $ref: '#/components/schemas/request.RegisterStruct'
+        type: object
     GetRepo_200_response:
       allOf:
       - $ref: '#/components/schemas/api.JSONResult'
@@ -331,13 +458,6 @@ components:
       required:
       - file
       type: object
-    UploadTaskLayerFile_200_response:
-      allOf:
-      - $ref: '#/components/schemas/api.JSONResult'
-      - properties:
-          data:
-            $ref: '#/components/schemas/response.UploadTaskResp'
-        type: object
     UploadTaskInfo_200_response:
       allOf:
       - $ref: '#/components/schemas/api.JSONResult'

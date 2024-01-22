@@ -359,6 +359,115 @@ func (a *ClientAPIService) NewUploadTaskIDExecute(r ApiNewUploadTaskIDRequest) (
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
+type ApiSearchAppRequest struct {
+	ctx context.Context
+	ApiService *ClientAPIService
+	data *ModelApp
+}
+
+// app json数据
+func (r ApiSearchAppRequest) Data(data ModelApp) ApiSearchAppRequest {
+	r.data = &data
+	return r
+}
+
+func (r ApiSearchAppRequest) Execute() (*SearchApp200Response, *http.Response, error) {
+	return r.ApiService.SearchAppExecute(r)
+}
+
+/*
+SearchApp 查找App
+
+ @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @return ApiSearchAppRequest
+*/
+func (a *ClientAPIService) SearchApp(ctx context.Context) ApiSearchAppRequest {
+	return ApiSearchAppRequest{
+		ApiService: a,
+		ctx: ctx,
+	}
+}
+
+// Execute executes the request
+//  @return SearchApp200Response
+func (a *ClientAPIService) SearchAppExecute(r ApiSearchAppRequest) (*SearchApp200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod   = http.MethodPost
+		localVarPostBody     interface{}
+		formFiles            []formFile
+		localVarReturnValue  *SearchApp200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClientAPIService.SearchApp")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/api/v0/apps/searchapp"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.data == nil {
+		return localVarReturnValue, nil, reportError("data is required and must be specified")
+	}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.data
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: err.Error(),
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
 type ApiSignInRequest struct {
 	ctx context.Context
 	ApiService *ClientAPIService
@@ -488,7 +597,7 @@ func (r ApiUploadTaskFileRequest) File(file *os.File) ApiUploadTaskFileRequest {
 	return r
 }
 
-func (r ApiUploadTaskFileRequest) Execute() (*UploadTaskLayerFile200Response, *http.Response, error) {
+func (r ApiUploadTaskFileRequest) Execute() (*ApiUploadTaskFileResp, *http.Response, error) {
 	return r.ApiService.UploadTaskFileExecute(r)
 }
 
@@ -510,13 +619,13 @@ func (a *ClientAPIService) UploadTaskFile(ctx context.Context, taskId string) Ap
 }
 
 // Execute executes the request
-//  @return UploadTaskLayerFile200Response
-func (a *ClientAPIService) UploadTaskFileExecute(r ApiUploadTaskFileRequest) (*UploadTaskLayerFile200Response, *http.Response, error) {
+//  @return ApiUploadTaskFileResp
+func (a *ClientAPIService) UploadTaskFileExecute(r ApiUploadTaskFileRequest) (*ApiUploadTaskFileResp, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPut
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *UploadTaskLayerFile200Response
+		localVarReturnValue  *ApiUploadTaskFileResp
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClientAPIService.UploadTaskFile")
@@ -741,7 +850,7 @@ func (r ApiUploadTaskLayerFileRequest) File(file *os.File) ApiUploadTaskLayerFil
 	return r
 }
 
-func (r ApiUploadTaskLayerFileRequest) Execute() (*UploadTaskLayerFile200Response, *http.Response, error) {
+func (r ApiUploadTaskLayerFileRequest) Execute() (*ApiUploadTaskLayerFileResp, *http.Response, error) {
 	return r.ApiService.UploadTaskLayerFileExecute(r)
 }
 
@@ -761,13 +870,13 @@ func (a *ClientAPIService) UploadTaskLayerFile(ctx context.Context, taskId strin
 }
 
 // Execute executes the request
-//  @return UploadTaskLayerFile200Response
-func (a *ClientAPIService) UploadTaskLayerFileExecute(r ApiUploadTaskLayerFileRequest) (*UploadTaskLayerFile200Response, *http.Response, error) {
+//  @return ApiUploadTaskLayerFileResp
+func (a *ClientAPIService) UploadTaskLayerFileExecute(r ApiUploadTaskLayerFileRequest) (*ApiUploadTaskLayerFileResp, *http.Response, error) {
 	var (
 		localVarHTTPMethod   = http.MethodPut
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *UploadTaskLayerFile200Response
+		localVarReturnValue  *ApiUploadTaskLayerFileResp
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClientAPIService.UploadTaskLayerFile")
