@@ -13,6 +13,9 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
+	rootCmd.AddCommand(initInfoCmd())
+	rootCmd.AddCommand(initPushCmd())
+	rootCmd.AddCommand(initVersionCmd())
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)

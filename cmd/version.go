@@ -11,14 +11,12 @@ import (
 //go:embed version.txt
 var Version string
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "show version information",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Print(Version)
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(versionCmd)
+func initVersionCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "version",
+		Short: "show version information",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Print(Version)
+		},
+	}
 }

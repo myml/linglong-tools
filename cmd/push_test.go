@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"testing"
 
@@ -13,7 +12,7 @@ import (
 
 func TestPushRun(t *testing.T) {
 	assert := require.New(t)
-	log.SetFlags(log.Lshortfile | log.LstdFlags)
+	pushCmd := initPushCmd()
 	var metaInfo layer.MetaInfo
 	metaInfo.Info.Appid = "test"
 	metaInfo.Info.Arch = append(metaInfo.Info.Arch, "amd64")

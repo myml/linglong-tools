@@ -20,20 +20,6 @@ type InfoArgs struct {
 var infoArgs = InfoArgs{}
 
 // infoCmd represents the info command
-var infoCmd = &cobra.Command{
-	Use:   "info",
-	Short: "Get info of linglong layer file",
-	Example: `linglong-tools info -f ./test.layer -p
-linglong-tools info -f ./test.layer --format '{{ .Raw }}'
-linglong-tools info -f ./test.layer --format '{{ .Info.Appid }}'
-linglong-tools info -f ./test.layer --format '{{ index .Info.Arch 0 }}'`,
-	Run: func(cmd *cobra.Command, args []string) {
-		err := InfoRun(infoArgs)
-		if err != nil {
-			log.Fatalln(err)
-		}
-	},
-}
 
 func InfoRun(args InfoArgs) error {
 	// 打开文件
@@ -70,14 +56,28 @@ func InfoRun(args InfoArgs) error {
 	return nil
 }
 
-func init() {
+func initInfoCmd() *cobra.Command {
+	infoCmd := cobra.Command{
+		Use:   "info",
+		Short: "Get info of linglong layer file",
+		Example: `linglong-tools info -f ./test.layer -p
+	linglong-tools info -f ./test.layer --format '{{ .Raw }}'
+	linglong-tools info -f ./test.layer --format '{{ .Info.Appid }}'
+	linglong-tools info -f ./test.layer --format '{{ index .Info.Arch 0 }}'`,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := InfoRun(infoArgs)
+			if err != nil {
+				log.Fatalln(err)
+			}
+		},
+	}
+
 	infoCmd.Flags().StringVarP(&infoArgs.LayerFile, "file", "f", infoArgs.LayerFile, "layer file")
 	infoCmd.Flags().StringVar(&infoArgs.FormatOutput, "format", infoArgs.FormatOutput, "Format output using a custom template")
 	infoCmd.Flags().BoolVarP(&infoArgs.PrettierOutput, "prettier", "p", infoArgs.PrettierOutput, "output pretty JSON")
-
 	err := infoCmd.MarkFlagRequired("file")
 	if err != nil {
 		panic(err)
 	}
-	rootCmd.AddCommand(infoCmd)
+	return &infoCmd
 }

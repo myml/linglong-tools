@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -14,12 +15,10 @@ type BinMetaInfo struct {
 	Size uint32
 }
 
-func TestParseMetaInfo1(t *testing.T) {
+func TestParseMetaInfoMock(t *testing.T) {
 	assert := require.New(t)
-	testFunc(assert, "<<< linglong >>>", "test")
-}
-
-func testFunc(assert *require.Assertions, head, appID string) {
+	appID := "test"
+	head := "<<< linglong >>>"
 	var metaInfo MetaInfo
 	metaInfo.Info.Appid = appID
 	payload, err := json.Marshal(metaInfo)
@@ -62,4 +61,13 @@ func testFunc(assert *require.Assertions, head, appID string) {
 	info, err := ParseMetaInfo(&buff)
 	assert.NoError(err)
 	assert.Equalf([]byte(info.Info.Appid), []byte(metaInfo.Info.Appid), "raw: %s parse: %#v", payload, info)
+}
+
+func TestParseMetaInfoReal(t *testing.T) {
+	assert := require.New(t)
+	data, err := os.ReadFile("testdata/test.layer")
+	assert.NoError(err)
+	info, err := ParseMetaInfo(bytes.NewReader(data))
+	assert.NoError(err)
+	assert.Equal(info.Raw, `{"info":{"appid":"org.deepin.draw","arch":["x86_64"],"base":"/latest/x86_64","description":"draw for deepin os.\n","kind":"app","module":"runtime","name":"deepin-draw","runtime":"org.deepin.Runtime/23.0.0/x86_64","size":102887829,"version":"6.0.5"},"version":"0.1"}`)
 }

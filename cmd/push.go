@@ -27,33 +27,6 @@ var pushArgs = PushArgs{
 	RepoChannel: "linglong",
 }
 
-// pushCmd represents the push command
-var pushCmd = &cobra.Command{
-	Use:   "push",
-	Short: "Push linglong layer file to remote repository",
-	Example: `# use environment variables: $LINGLONG_USERNAME and $LINGLONG_PASSOWRD (Recommend)
-linglong-tools push -f ./test.layer -r https://repo.linglong.dev
-# pass username and password
-linglong-tools push -f ./test.layer -r https://user:pass@repo.linglong.dev
-# pass repo name
-linglong-tools push -f ./test.layer -r https://repo.linglong.dev -n develop-snipe`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if pushArgs.PrintStatus {
-			printStatus()
-			return
-		}
-		err := PushRun(context.Background(), pushArgs)
-		if err != nil {
-			var apiError *apiserver.GenericOpenAPIError
-			if errors.As(err, &apiError) {
-				log.Fatalln(err, string(apiError.Body()))
-			} else {
-				log.Fatalln(err)
-			}
-		}
-	},
-}
-
 func PushRun(ctx context.Context, args PushArgs) error {
 	f, err := os.Open(args.LayerFile)
 	if err != nil {
@@ -183,7 +156,32 @@ var (
 	UploadTaskStatusFailed UploadTaskStatus = "failed"
 )
 
-func init() {
+func initPushCmd() *cobra.Command {
+	pushCmd := cobra.Command{
+		Use:   "push",
+		Short: "Push linglong layer file to remote repository",
+		Example: `# use environment variables: $LINGLONG_USERNAME and $LINGLONG_PASSOWRD (Recommend)
+	linglong-tools push -f ./test.layer -r https://repo.linglong.dev
+	# pass username and password
+	linglong-tools push -f ./test.layer -r https://user:pass@repo.linglong.dev
+	# pass repo name
+	linglong-tools push -f ./test.layer -r https://repo.linglong.dev -n develop-snipe`,
+		Run: func(cmd *cobra.Command, args []string) {
+			if pushArgs.PrintStatus {
+				printStatus()
+				return
+			}
+			err := PushRun(context.Background(), pushArgs)
+			if err != nil {
+				var apiError *apiserver.GenericOpenAPIError
+				if errors.As(err, &apiError) {
+					log.Fatalln(err, string(apiError.Body()))
+				} else {
+					log.Fatalln(err)
+				}
+			}
+		},
+	}
 	pushCmd.Flags().StringVarP(&pushArgs.LayerFile, "file", "f", pushArgs.LayerFile, "layer file")
 	pushCmd.Flags().StringVarP(&pushArgs.RepoUrl, "repo", "r", pushArgs.RepoUrl, "remote repo url")
 	pushCmd.Flags().StringVarP(&pushArgs.RepoName, "name", "n", pushArgs.RepoName, "remote repo name")
@@ -193,5 +191,5 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	rootCmd.AddCommand(pushCmd)
+	return &pushCmd
 }
