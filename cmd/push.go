@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/url"
 	"os"
 	"time"
 
@@ -13,6 +12,44 @@ import (
 	"github.com/myml/linglong-tools/pkg/layer"
 	"github.com/spf13/cobra"
 )
+
+func initPushCmd() *cobra.Command {
+	pushCmd := cobra.Command{
+		Use:   "push",
+		Short: "Push linglong layer file to remote repository",
+		Example: `# use environment variables: $LINGLONG_USERNAME and $LINGLONG_PASSOWRD (Recommend)
+	linglong-tools push -f ./test.layer -r https://repo.linglong.dev
+	# pass username and password
+	linglong-tools push -f ./test.layer -r https://user:pass@repo.linglong.dev
+	# pass repo name
+	linglong-tools push -f ./test.layer -r https://repo.linglong.dev -n develop-snipe`,
+		Run: func(cmd *cobra.Command, args []string) {
+			if pushArgs.PrintStatus {
+				printStatus()
+				return
+			}
+			err := PushRun(context.Background(), pushArgs)
+			if err != nil {
+				var apiError *apiserver.GenericOpenAPIError
+				if errors.As(err, &apiError) {
+					log.Fatalln(err, string(apiError.Body()))
+				} else {
+					log.Fatalln(err)
+				}
+			}
+		},
+	}
+	pushCmd.Flags().StringVarP(&pushArgs.LayerFile, "file", "f", pushArgs.LayerFile, "layer file")
+	pushCmd.Flags().StringVarP(&pushArgs.RepoUrl, "repo", "r", pushArgs.RepoUrl, "remote repo url")
+	pushCmd.Flags().StringVarP(&pushArgs.RepoName, "name", "n", pushArgs.RepoName, "remote repo name")
+	pushCmd.Flags().BoolVarP(&pushArgs.PrintStatus, "print", "p", pushArgs.PrintStatus, "print all status")
+	pushCmd.Flags().StringVarP(&pushArgs.RepoChannel, "channel", "c", pushArgs.RepoChannel, "remote repo channel")
+	err := pushCmd.MarkFlagRequired("file")
+	if err != nil {
+		panic(err)
+	}
+	return &pushCmd
+}
 
 type PushArgs struct {
 	LayerFile   string
@@ -42,31 +79,10 @@ func PushRun(ctx context.Context, args PushArgs) error {
 	if err != nil {
 		return fmt.Errorf("file seek: %w", err)
 	}
-	u, err := url.Parse(args.RepoUrl)
-	if err != nil {
-		return fmt.Errorf("parse repo url: %w", err)
-	}
-	username, password := os.Getenv("LINGLONG_USERNAME"), os.Getenv("LINGLONG_PASSWORD")
-	if u.User != nil {
-		username = u.User.Username()
-		pwd, ok := u.User.Password()
-		if ok {
-			password = pwd
-		}
-	}
-	cfg := apiserver.NewConfiguration()
-	cfg.Scheme = u.Scheme
-	cfg.Host = u.Host
-	api := apiserver.NewAPIClient(cfg)
-
 	log.Println(UploadTaskStatusLogining)
-	authReq := apiserver.RequestAuth{Username: &username, Password: &password}
-	loginResp, _, err := api.ClientAPI.SignIn(ctx).Data(authReq).Execute()
+	api, token, err := initAPIClient(args.RepoUrl, true)
 	if err != nil {
-		return fmt.Errorf("sign in: %w", err)
-	}
-	if loginResp.GetData().Token == nil {
-		return fmt.Errorf("token is null: %s", loginResp.GetMsg())
+		return fmt.Errorf("init api: %w", err)
 	}
 	ref := fmt.Sprintf("%v/%v/%v/%v/%v",
 		args.RepoChannel,
@@ -77,22 +93,22 @@ func PushRun(ctx context.Context, args PushArgs) error {
 	)
 	log.Println(UploadTaskStatusCreating)
 	taskReq := apiserver.SchemaNewUploadTaskReq{RepoName: &args.RepoName, Ref: &ref}
-	newTaskResp, _, err := api.ClientAPI.NewUploadTaskID(ctx).Req(taskReq).XToken(loginResp.Data.GetToken()).Execute()
+	newTaskResp, _, err := api.NewUploadTaskID(ctx).Req(taskReq).XToken(*token).Execute()
 	if err != nil {
 		return fmt.Errorf("create upload task: %w", err)
 	}
 	if newTaskResp.GetData().Id == nil {
-		return fmt.Errorf("task id is null: %s", loginResp.GetMsg())
+		return fmt.Errorf("task id is null: %s", *token)
 	}
 	log.Println(UploadTaskStatusUploading)
-	_, _, err = api.ClientAPI.UploadTaskLayerFile(ctx, *newTaskResp.Data.Id).XToken(loginResp.Data.GetToken()).File(f).Execute()
+	_, _, err = api.UploadTaskLayerFile(ctx, *newTaskResp.Data.Id).XToken(*token).File(f).Execute()
 	if err != nil {
 		return fmt.Errorf("upload layer file: %w", err)
 	}
 	status := ""
 	for {
 		time.Sleep(time.Second)
-		taskInfoResp, _, err := api.ClientAPI.UploadTaskInfo(ctx, *newTaskResp.Data.Id).XToken(loginResp.Data.GetToken()).Execute()
+		taskInfoResp, _, err := api.UploadTaskInfo(ctx, *newTaskResp.Data.Id).XToken(*token).Execute()
 		if err != nil {
 			return fmt.Errorf("get task info: %w", err)
 		}
@@ -155,41 +171,3 @@ var (
 	// UploadTaskStatusFailed failed
 	UploadTaskStatusFailed UploadTaskStatus = "failed"
 )
-
-func initPushCmd() *cobra.Command {
-	pushCmd := cobra.Command{
-		Use:   "push",
-		Short: "Push linglong layer file to remote repository",
-		Example: `# use environment variables: $LINGLONG_USERNAME and $LINGLONG_PASSOWRD (Recommend)
-	linglong-tools push -f ./test.layer -r https://repo.linglong.dev
-	# pass username and password
-	linglong-tools push -f ./test.layer -r https://user:pass@repo.linglong.dev
-	# pass repo name
-	linglong-tools push -f ./test.layer -r https://repo.linglong.dev -n develop-snipe`,
-		Run: func(cmd *cobra.Command, args []string) {
-			if pushArgs.PrintStatus {
-				printStatus()
-				return
-			}
-			err := PushRun(context.Background(), pushArgs)
-			if err != nil {
-				var apiError *apiserver.GenericOpenAPIError
-				if errors.As(err, &apiError) {
-					log.Fatalln(err, string(apiError.Body()))
-				} else {
-					log.Fatalln(err)
-				}
-			}
-		},
-	}
-	pushCmd.Flags().StringVarP(&pushArgs.LayerFile, "file", "f", pushArgs.LayerFile, "layer file")
-	pushCmd.Flags().StringVarP(&pushArgs.RepoUrl, "repo", "r", pushArgs.RepoUrl, "remote repo url")
-	pushCmd.Flags().StringVarP(&pushArgs.RepoName, "name", "n", pushArgs.RepoName, "remote repo name")
-	pushCmd.Flags().BoolVarP(&pushArgs.PrintStatus, "print", "p", pushArgs.PrintStatus, "print all status")
-	pushCmd.Flags().StringVarP(&pushArgs.RepoChannel, "channel", "c", pushArgs.RepoChannel, "remote repo channel")
-	err := pushCmd.MarkFlagRequired("file")
-	if err != nil {
-		panic(err)
-	}
-	return &pushCmd
-}
