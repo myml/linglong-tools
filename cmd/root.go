@@ -17,6 +17,7 @@ func Execute() {
 	rootCmd.AddCommand(initPushCmd())
 	rootCmd.AddCommand(initVersionCmd())
 	rootCmd.AddCommand(initSearchCmd())
+	rootCmd.AddCommand(initDeleteCmd())
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
