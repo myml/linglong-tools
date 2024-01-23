@@ -73,6 +73,61 @@ paths:
       summary: 查看仓库信息
       tags:
       - Client
+  /api/v1/repos/{repo}/refs/{channel}/{app_id}/{version}/{arch}/{module}:
+    delete:
+      description: delete a ref from repo
+      operationId: RefDelete
+      parameters:
+      - description: 31a165ba1be6dec616b1f8f3207b4273
+        in: header
+        name: X-Token
+        required: true
+        schema:
+          type: string
+      - description: repo name
+        in: path
+        name: repo
+        required: true
+        schema:
+          type: string
+      - description: channel
+        in: path
+        name: channel
+        required: true
+        schema:
+          type: string
+      - description: app id
+        in: path
+        name: app_id
+        required: true
+        schema:
+          type: string
+      - description: version
+        in: path
+        name: version
+        required: true
+        schema:
+          type: string
+      - description: arch
+        in: path
+        name: arch
+        required: true
+        schema:
+          type: string
+      - description: module
+        in: path
+        name: module
+        required: true
+        schema:
+          type: string
+      - description: hard delete
+        in: query
+        name: hard
+        schema:
+          type: string
+      summary: delete a ref from repo
+      tags:
+      - Client
   /api/v1/sign-in:
     post:
       operationId: SignIn

@@ -7,6 +7,7 @@ Method | HTTP request | Description
 [**FuzzySearchApp**](ClientAPI.md#FuzzySearchApp) | **Post** /api/v0/apps/fuzzysearchapp | 模糊查找App
 [**GetRepo**](ClientAPI.md#GetRepo) | **Get** /api/v1/repos/{repo} | 查看仓库信息
 [**NewUploadTaskID**](ClientAPI.md#NewUploadTaskID) | **Post** /api/v1/upload-tasks | generate a new upload task id
+[**RefDelete**](ClientAPI.md#RefDelete) | **Delete** /api/v1/repos/{repo}/refs/{channel}/{app_id}/{version}/{arch}/{module} | delete a ref from repo
 [**SearchApp**](ClientAPI.md#SearchApp) | **Post** /api/v0/apps/searchapp | 查找App
 [**SignIn**](ClientAPI.md#SignIn) | **Post** /api/v1/sign-in | 登陆帐号
 [**UploadTaskFile**](ClientAPI.md#UploadTaskFile) | **Put** /api/v1/upload-tasks/{task_id}/tar | upload tgz file to upload task
@@ -211,6 +212,93 @@ No authorization required
 
 - **Content-Type**: Not defined
 - **Accept**: */*
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
+
+
+## RefDelete
+
+> RefDelete(ctx, repo, channel, appId, version, arch, module).XToken(xToken).Hard(hard).Execute()
+
+delete a ref from repo
+
+
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+    xToken := "xToken_example" // string | 31a165ba1be6dec616b1f8f3207b4273
+    repo := "repo_example" // string | repo name
+    channel := "channel_example" // string | channel
+    appId := "appId_example" // string | app id
+    version := "version_example" // string | version
+    arch := "arch_example" // string | arch
+    module := "module_example" // string | module
+    hard := "hard_example" // string | hard delete (optional)
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    r, err := apiClient.ClientAPI.RefDelete(context.Background(), repo, channel, appId, version, arch, module).XToken(xToken).Hard(hard).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `ClientAPI.RefDelete``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+}
+```
+
+### Path Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+**ctx** | **context.Context** | context for authentication, logging, cancellation, deadlines, tracing, etc.
+**repo** | **string** | repo name | 
+**channel** | **string** | channel | 
+**appId** | **string** | app id | 
+**version** | **string** | version | 
+**arch** | **string** | arch | 
+**module** | **string** | module | 
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiRefDeleteRequest struct via the builder pattern
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **xToken** | **string** | 31a165ba1be6dec616b1f8f3207b4273 | 
+
+
+
+
+
+
+ **hard** | **string** | hard delete | 
+
+### Return type
+
+ (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
 [[Back to Model list]](../README.md#documentation-for-models)

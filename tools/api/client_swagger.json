@@ -146,6 +146,79 @@
                 }
             }
         },
+        "/api/v1/repos/{repo}/refs/{channel}/{app_id}/{version}/{arch}/{module}": {
+            "delete": {
+                "description": "delete a ref from repo",
+                "tags": [
+                    "Client",
+                    "Ref"
+                ],
+                "summary": "delete a ref from repo",
+                "operationId": "RefDelete",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "31a165ba1be6dec616b1f8f3207b4273",
+                        "name": "X-Token",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "repo name",
+                        "name": "repo",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "channel",
+                        "name": "channel",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "app id",
+                        "name": "app_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "arch",
+                        "name": "arch",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "module",
+                        "name": "module",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "hard delete",
+                        "name": "hard",
+                        "in": "query"
+                    }
+                ],
+                "responses": {},
+                "X-Role": [
+                    "admin",
+                    "owner"
+                ]
+            }
+        },
         "/api/v1/sign-in": {
             "post": {
                 "tags": [

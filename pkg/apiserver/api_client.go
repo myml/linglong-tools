@@ -359,6 +359,139 @@ func (a *ClientAPIService) NewUploadTaskIDExecute(r ApiNewUploadTaskIDRequest) (
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
+type ApiRefDeleteRequest struct {
+	ctx context.Context
+	ApiService *ClientAPIService
+	xToken *string
+	repo string
+	channel string
+	appId string
+	version string
+	arch string
+	module string
+	hard *string
+}
+
+// 31a165ba1be6dec616b1f8f3207b4273
+func (r ApiRefDeleteRequest) XToken(xToken string) ApiRefDeleteRequest {
+	r.xToken = &xToken
+	return r
+}
+
+// hard delete
+func (r ApiRefDeleteRequest) Hard(hard string) ApiRefDeleteRequest {
+	r.hard = &hard
+	return r
+}
+
+func (r ApiRefDeleteRequest) Execute() (*http.Response, error) {
+	return r.ApiService.RefDeleteExecute(r)
+}
+
+/*
+RefDelete delete a ref from repo
+
+delete a ref from repo
+
+ @param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+ @param repo repo name
+ @param channel channel
+ @param appId app id
+ @param version version
+ @param arch arch
+ @param module module
+ @return ApiRefDeleteRequest
+*/
+func (a *ClientAPIService) RefDelete(ctx context.Context, repo string, channel string, appId string, version string, arch string, module string) ApiRefDeleteRequest {
+	return ApiRefDeleteRequest{
+		ApiService: a,
+		ctx: ctx,
+		repo: repo,
+		channel: channel,
+		appId: appId,
+		version: version,
+		arch: arch,
+		module: module,
+	}
+}
+
+// Execute executes the request
+func (a *ClientAPIService) RefDeleteExecute(r ApiRefDeleteRequest) (*http.Response, error) {
+	var (
+		localVarHTTPMethod   = http.MethodDelete
+		localVarPostBody     interface{}
+		formFiles            []formFile
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClientAPIService.RefDelete")
+	if err != nil {
+		return nil, &GenericOpenAPIError{error: err.Error()}
+	}
+
+	localVarPath := localBasePath + "/api/v1/repos/{repo}/refs/{channel}/{app_id}/{version}/{arch}/{module}"
+	localVarPath = strings.Replace(localVarPath, "{"+"repo"+"}", url.PathEscape(parameterValueToString(r.repo, "repo")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"channel"+"}", url.PathEscape(parameterValueToString(r.channel, "channel")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"app_id"+"}", url.PathEscape(parameterValueToString(r.appId, "appId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"version"+"}", url.PathEscape(parameterValueToString(r.version, "version")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"arch"+"}", url.PathEscape(parameterValueToString(r.arch, "arch")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"module"+"}", url.PathEscape(parameterValueToString(r.module, "module")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.xToken == nil {
+		return nil, reportError("xToken is required and must be specified")
+	}
+
+	if r.hard != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "hard", r.hard, "")
+	}
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	parameterAddToHeaderOrQuery(localVarHeaderParams, "X-Token", r.xToken, "")
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body:  localVarBody,
+			error: localVarHTTPResponse.Status,
+		}
+		return localVarHTTPResponse, newErr
+	}
+
+	return localVarHTTPResponse, nil
+}
+
 type ApiSearchAppRequest struct {
 	ctx context.Context
 	ApiService *ClientAPIService

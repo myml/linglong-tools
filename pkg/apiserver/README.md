@@ -81,6 +81,7 @@ Class | Method | HTTP request | Description
 *ClientAPI* | [**FuzzySearchApp**](docs/ClientAPI.md#fuzzysearchapp) | **Post** /api/v0/apps/fuzzysearchapp | 模糊查找App
 *ClientAPI* | [**GetRepo**](docs/ClientAPI.md#getrepo) | **Get** /api/v1/repos/{repo} | 查看仓库信息
 *ClientAPI* | [**NewUploadTaskID**](docs/ClientAPI.md#newuploadtaskid) | **Post** /api/v1/upload-tasks | generate a new upload task id
+*ClientAPI* | [**RefDelete**](docs/ClientAPI.md#refdelete) | **Delete** /api/v1/repos/{repo}/refs/{channel}/{app_id}/{version}/{arch}/{module} | delete a ref from repo
 *ClientAPI* | [**SearchApp**](docs/ClientAPI.md#searchapp) | **Post** /api/v0/apps/searchapp | 查找App
 *ClientAPI* | [**SignIn**](docs/ClientAPI.md#signin) | **Post** /api/v1/sign-in | 登陆帐号
 *ClientAPI* | [**UploadTaskFile**](docs/ClientAPI.md#uploadtaskfile) | **Put** /api/v1/upload-tasks/{task_id}/tar | upload tgz file to upload task
