@@ -12,14 +12,16 @@ import (
 
 func TestPushRun(t *testing.T) {
 	assert := require.New(t)
-	pushCmd := initPushCmd()
+	pushArgs := PushArgs{
+		RepoName:    DefaultRepoName,
+		RepoChannel: DefaultChannel,
+	}
 	var metaInfo layer.MetaInfo
 	metaInfo.Info.Appid = "test"
 	metaInfo.Info.Arch = append(metaInfo.Info.Arch, "amd64")
 	fname := genLayerFile(assert, metaInfo)
 
 	pushArgs.PrintStatus = true
-	pushCmd.Run(nil, nil)
 	// 模拟api服务
 	fakeToken := "jwt_token_xxx"
 	http.HandleFunc("/api/v1/sign-in", func(w http.ResponseWriter, r *http.Request) {
