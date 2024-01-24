@@ -64,7 +64,9 @@ linglong-tools push -f ./test.layer -r https://repo.linglong.dev -n develop-snip
 
 linglong-tools search 命令用于从远程仓库搜索应用信息。
 
-目前仅支持精准搜索，需要传递应用五元组(id,module,channel,version,arch)，所以只能用来判断应用是否存在仓库。
+~~目前仅支持精准搜索，需要传递应用五元组(id,module,channel,version,arch)，所以只能用来判断应用是否存在仓库。~~
+
+如果不传递 version，返回应用的所有版本。
 
 如果应用不存在会返回空数组`[]`，如果应用存在会返回具体的应用信息`[{...}]`
 

@@ -32,13 +32,14 @@ func RemoteInfoRun(ctx context.Context, args RemoteInfoArgs) error {
 	if err != nil {
 		return fmt.Errorf("init api client: %w", err)
 	}
-	result, _, err := client.SearchApp(ctx).Data(apiserver.ModelApp{
-		AppId:   &args.AppID,
-		Module:  &args.Module,
-		Channel: &args.RepoChannel,
-		Version: &args.Version,
-		Arch:    &args.Arch,
-	}).Execute()
+	result, _, err := client.SearchApp(ctx).
+		RepoName(args.RepoName).
+		Channel(args.RepoChannel).
+		AppId(args.AppID).
+		Module(args.Module).
+		Arch(args.Arch).
+		Version(args.Version).
+		Execute()
 	if err != nil {
 		var apiError *apiserver.GenericOpenAPIError
 		if errors.As(err, &apiError) {
@@ -49,14 +50,11 @@ func RemoteInfoRun(ctx context.Context, args RemoteInfoArgs) error {
 		}
 		return fmt.Errorf("send api request: %w", err)
 	}
-	if result.GetCode() != 200 {
-		return fmt.Errorf("search faield: %s", result.GetMsg())
-	}
 	encoder := json.NewEncoder(os.Stdout)
 	if args.PrettierOutput {
 		encoder.SetIndent("", "  ")
 	}
-	return encoder.Encode([]apiserver.RequestRegisterStruct{result.GetData()})
+	return encoder.Encode(result.GetData())
 }
 
 func initSearchCmd() *cobra.Command {
@@ -87,10 +85,6 @@ func initSearchCmd() *cobra.Command {
 	searchCmd.Flags().StringVarP(&searchArgs.Version, "app_version", "v", "", "app version")
 	searchCmd.Flags().BoolVarP(&searchArgs.PrettierOutput, "prettier", "p", false, "output pretty JSON")
 	err := searchCmd.MarkFlagRequired("app_id")
-	if err != nil {
-		panic(err)
-	}
-	err = searchCmd.MarkFlagRequired("app_version")
 	if err != nil {
 		panic(err)
 	}
