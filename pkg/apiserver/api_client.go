@@ -495,16 +495,51 @@ func (a *ClientAPIService) RefDeleteExecute(r ApiRefDeleteRequest) (*http.Respon
 type ApiSearchAppRequest struct {
 	ctx context.Context
 	ApiService *ClientAPIService
-	data *ModelApp
+	repoName *string
+	channel *string
+	appId *string
+	arch *string
+	module *string
+	version *string
 }
 
-// app json数据
-func (r ApiSearchAppRequest) Data(data ModelApp) ApiSearchAppRequest {
-	r.data = &data
+// repo name
+func (r ApiSearchAppRequest) RepoName(repoName string) ApiSearchAppRequest {
+	r.repoName = &repoName
 	return r
 }
 
-func (r ApiSearchAppRequest) Execute() (*SearchApp200Response, *http.Response, error) {
+// app channel
+func (r ApiSearchAppRequest) Channel(channel string) ApiSearchAppRequest {
+	r.channel = &channel
+	return r
+}
+
+// app id
+func (r ApiSearchAppRequest) AppId(appId string) ApiSearchAppRequest {
+	r.appId = &appId
+	return r
+}
+
+// app arch
+func (r ApiSearchAppRequest) Arch(arch string) ApiSearchAppRequest {
+	r.arch = &arch
+	return r
+}
+
+// app module
+func (r ApiSearchAppRequest) Module(module string) ApiSearchAppRequest {
+	r.module = &module
+	return r
+}
+
+// app version
+func (r ApiSearchAppRequest) Version(version string) ApiSearchAppRequest {
+	r.version = &version
+	return r
+}
+
+func (r ApiSearchAppRequest) Execute() (*Apiv2SearchAppResponse, *http.Response, error) {
 	return r.ApiService.SearchAppExecute(r)
 }
 
@@ -522,13 +557,13 @@ func (a *ClientAPIService) SearchApp(ctx context.Context) ApiSearchAppRequest {
 }
 
 // Execute executes the request
-//  @return SearchApp200Response
-func (a *ClientAPIService) SearchAppExecute(r ApiSearchAppRequest) (*SearchApp200Response, *http.Response, error) {
+//  @return Apiv2SearchAppResponse
+func (a *ClientAPIService) SearchAppExecute(r ApiSearchAppRequest) (*Apiv2SearchAppResponse, *http.Response, error) {
 	var (
-		localVarHTTPMethod   = http.MethodPost
+		localVarHTTPMethod   = http.MethodGet
 		localVarPostBody     interface{}
 		formFiles            []formFile
-		localVarReturnValue  *SearchApp200Response
+		localVarReturnValue  *Apiv2SearchAppResponse
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClientAPIService.SearchApp")
@@ -536,17 +571,37 @@ func (a *ClientAPIService) SearchAppExecute(r ApiSearchAppRequest) (*SearchApp20
 		return localVarReturnValue, nil, &GenericOpenAPIError{error: err.Error()}
 	}
 
-	localVarPath := localBasePath + "/api/v0/apps/searchapp"
+	localVarPath := localBasePath + "/api/v2/search/apps"
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
-	if r.data == nil {
-		return localVarReturnValue, nil, reportError("data is required and must be specified")
+	if r.repoName == nil {
+		return localVarReturnValue, nil, reportError("repoName is required and must be specified")
+	}
+	if r.channel == nil {
+		return localVarReturnValue, nil, reportError("channel is required and must be specified")
+	}
+	if r.appId == nil {
+		return localVarReturnValue, nil, reportError("appId is required and must be specified")
+	}
+	if r.arch == nil {
+		return localVarReturnValue, nil, reportError("arch is required and must be specified")
+	}
+	if r.module == nil {
+		return localVarReturnValue, nil, reportError("module is required and must be specified")
 	}
 
+	parameterAddToHeaderOrQuery(localVarQueryParams, "repo_name", r.repoName, "")
+	parameterAddToHeaderOrQuery(localVarQueryParams, "channel", r.channel, "")
+	parameterAddToHeaderOrQuery(localVarQueryParams, "app_id", r.appId, "")
+	parameterAddToHeaderOrQuery(localVarQueryParams, "arch", r.arch, "")
+	parameterAddToHeaderOrQuery(localVarQueryParams, "module", r.module, "")
+	if r.version != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "version", r.version, "")
+	}
 	// to determine the Content-Type header
-	localVarHTTPContentTypes := []string{"application/json"}
+	localVarHTTPContentTypes := []string{}
 
 	// set Content-Type header
 	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
@@ -562,8 +617,6 @@ func (a *ClientAPIService) SearchAppExecute(r ApiSearchAppRequest) (*SearchApp20
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	// body params
-	localVarPostBody = r.data
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -585,6 +638,27 @@ func (a *ClientAPIService) SearchAppExecute(r ApiSearchAppRequest) (*SearchApp20
 		newErr := &GenericOpenAPIError{
 			body:  localVarBody,
 			error: localVarHTTPResponse.Status,
+		}
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v Apiv2JSONError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode == 500 {
+			var v Apiv2JSONError
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.error = err.Error()
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+					newErr.error = formatErrorMessage(localVarHTTPResponse.Status, &v)
+					newErr.model = v
 		}
 		return localVarReturnValue, localVarHTTPResponse, newErr
 	}

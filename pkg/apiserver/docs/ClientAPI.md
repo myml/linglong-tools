@@ -8,7 +8,7 @@ Method | HTTP request | Description
 [**GetRepo**](ClientAPI.md#GetRepo) | **Get** /api/v1/repos/{repo} | 查看仓库信息
 [**NewUploadTaskID**](ClientAPI.md#NewUploadTaskID) | **Post** /api/v1/upload-tasks | generate a new upload task id
 [**RefDelete**](ClientAPI.md#RefDelete) | **Delete** /api/v1/repos/{repo}/refs/{channel}/{app_id}/{version}/{arch}/{module} | delete a ref from repo
-[**SearchApp**](ClientAPI.md#SearchApp) | **Post** /api/v0/apps/searchapp | 查找App
+[**SearchApp**](ClientAPI.md#SearchApp) | **Get** /api/v2/search/apps | 查找App
 [**SignIn**](ClientAPI.md#SignIn) | **Post** /api/v1/sign-in | 登陆帐号
 [**UploadTaskFile**](ClientAPI.md#UploadTaskFile) | **Put** /api/v1/upload-tasks/{task_id}/tar | upload tgz file to upload task
 [**UploadTaskInfo**](ClientAPI.md#UploadTaskInfo) | **Get** /api/v1/upload-tasks/{task_id}/status | get upload task status
@@ -307,7 +307,7 @@ No authorization required
 
 ## SearchApp
 
-> SearchApp200Response SearchApp(ctx).Data(data).Execute()
+> Apiv2SearchAppResponse SearchApp(ctx).RepoName(repoName).Channel(channel).AppId(appId).Arch(arch).Module(module).Version(version).Execute()
 
 查找App
 
@@ -324,16 +324,21 @@ import (
 )
 
 func main() {
-    data := *openapiclient.NewModelApp() // ModelApp | app json数据
+    repoName := "repoName_example" // string | repo name
+    channel := "channel_example" // string | app channel
+    appId := "appId_example" // string | app id
+    arch := "arch_example" // string | app arch
+    module := "module_example" // string | app module
+    version := "version_example" // string | app version (optional)
 
     configuration := openapiclient.NewConfiguration()
     apiClient := openapiclient.NewAPIClient(configuration)
-    resp, r, err := apiClient.ClientAPI.SearchApp(context.Background()).Data(data).Execute()
+    resp, r, err := apiClient.ClientAPI.SearchApp(context.Background()).RepoName(repoName).Channel(channel).AppId(appId).Arch(arch).Module(module).Version(version).Execute()
     if err != nil {
         fmt.Fprintf(os.Stderr, "Error when calling `ClientAPI.SearchApp``: %v\n", err)
         fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
     }
-    // response from `SearchApp`: SearchApp200Response
+    // response from `SearchApp`: Apiv2SearchAppResponse
     fmt.Fprintf(os.Stdout, "Response from `ClientAPI.SearchApp`: %v\n", resp)
 }
 ```
@@ -349,11 +354,16 @@ Other parameters are passed through a pointer to a apiSearchAppRequest struct vi
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **data** | [**ModelApp**](ModelApp.md) | app json数据 | 
+ **repoName** | **string** | repo name | 
+ **channel** | **string** | app channel | 
+ **appId** | **string** | app id | 
+ **arch** | **string** | app arch | 
+ **module** | **string** | app module | 
+ **version** | **string** | app version | 
 
 ### Return type
 
-[**SearchApp200Response**](SearchApp200Response.md)
+[**Apiv2SearchAppResponse**](Apiv2SearchAppResponse.md)
 
 ### Authorization
 
@@ -361,7 +371,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)

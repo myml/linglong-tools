@@ -60,52 +60,6 @@
                 }
             }
         },
-        "/api/v0/apps/searchapp": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Client"
-                ],
-                "summary": "查找App",
-                "operationId": "SearchApp",
-                "parameters": [
-                    {
-                        "description": "app json数据",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.App"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/api.JSONResult"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/request.RegisterStruct"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/repos/{repo}": {
             "get": {
                 "description": "returns repository mode and resolve all branches",
@@ -456,6 +410,84 @@
                     "developer"
                 ]
             }
+        },
+        "/api/v2/search/apps": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Client"
+                ],
+                "summary": "查找App",
+                "operationId": "SearchApp",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "repo name",
+                        "name": "repo_name",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "app channel",
+                        "name": "channel",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "app id",
+                        "name": "app_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "app arch",
+                        "name": "arch",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "app module",
+                        "name": "module",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "app version",
+                        "name": "version",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apiv2.SearchAppResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/apiv2.JSONError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/apiv2.JSONError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -508,87 +540,39 @@
                 }
             }
         },
-        "gorm.DeletedAt": {
+        "apiv2.JSONError": {
             "type": "object",
             "properties": {
-                "time": {
+                "code": {
+                    "type": "integer"
+                },
+                "fields": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "msg": {
                     "type": "string"
                 },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
-        "model.App": {
+        "apiv2.SearchAppResponse": {
             "type": "object",
             "properties": {
-                "appId": {
-                    "description": "AppID             e.g. org.deepin.test",
-                    "type": "string"
-                },
-                "arch": {
-                    "description": "CPU Architecture, e.g. x86_64",
-                    "type": "string"
-                },
-                "channel": {
-                    "description": "e.g. stable",
-                    "type": "string"
-                },
-                "checkSum": {
-                    "description": "checksum, commit id",
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
-                "description": {
-                    "description": "description",
-                    "type": "string"
-                },
-                "id": {
+                "code": {
                     "type": "integer"
                 },
-                "kind": {
-                    "description": "kind",
-                    "type": "string"
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.RegisterStruct"
+                    }
                 },
-                "module": {
-                    "description": "e.g. binary",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "App Name          e.g. Deepin Music",
-                    "type": "string"
-                },
-                "repoName": {
-                    "description": "repo name",
-                    "type": "string"
-                },
-                "runtime": {
-                    "description": "runtime",
-                    "type": "string"
-                },
-                "size": {
-                    "description": "size",
-                    "type": "integer"
-                },
-                "uab_url": {
-                    "description": "deprecated",
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "uuid": {
-                    "description": "为了兼容旧接口，商店需要uuid做主键",
-                    "type": "string"
-                },
-                "version": {
-                    "description": "App Version       e.g. 0.0.1",
+                "trace_id": {
                     "type": "string"
                 }
             }

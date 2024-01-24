@@ -82,7 +82,7 @@ Class | Method | HTTP request | Description
 *ClientAPI* | [**GetRepo**](docs/ClientAPI.md#getrepo) | **Get** /api/v1/repos/{repo} | 查看仓库信息
 *ClientAPI* | [**NewUploadTaskID**](docs/ClientAPI.md#newuploadtaskid) | **Post** /api/v1/upload-tasks | generate a new upload task id
 *ClientAPI* | [**RefDelete**](docs/ClientAPI.md#refdelete) | **Delete** /api/v1/repos/{repo}/refs/{channel}/{app_id}/{version}/{arch}/{module} | delete a ref from repo
-*ClientAPI* | [**SearchApp**](docs/ClientAPI.md#searchapp) | **Post** /api/v0/apps/searchapp | 查找App
+*ClientAPI* | [**SearchApp**](docs/ClientAPI.md#searchapp) | **Get** /api/v2/search/apps | 查找App
 *ClientAPI* | [**SignIn**](docs/ClientAPI.md#signin) | **Post** /api/v1/sign-in | 登陆帐号
 *ClientAPI* | [**UploadTaskFile**](docs/ClientAPI.md#uploadtaskfile) | **Put** /api/v1/upload-tasks/{task_id}/tar | upload tgz file to upload task
 *ClientAPI* | [**UploadTaskInfo**](docs/ClientAPI.md#uploadtaskinfo) | **Get** /api/v1/upload-tasks/{task_id}/status | get upload task status
@@ -94,10 +94,10 @@ Class | Method | HTTP request | Description
  - [ApiJSONResult](docs/ApiJSONResult.md)
  - [ApiUploadTaskFileResp](docs/ApiUploadTaskFileResp.md)
  - [ApiUploadTaskLayerFileResp](docs/ApiUploadTaskLayerFileResp.md)
+ - [Apiv2JSONError](docs/Apiv2JSONError.md)
+ - [Apiv2SearchAppResponse](docs/Apiv2SearchAppResponse.md)
  - [FuzzySearchApp200Response](docs/FuzzySearchApp200Response.md)
  - [GetRepo200Response](docs/GetRepo200Response.md)
- - [GormDeletedAt](docs/GormDeletedAt.md)
- - [ModelApp](docs/ModelApp.md)
  - [NewUploadTaskID200Response](docs/NewUploadTaskID200Response.md)
  - [RequestAuth](docs/RequestAuth.md)
  - [RequestFuzzySearchReq](docs/RequestFuzzySearchReq.md)
@@ -108,7 +108,6 @@ Class | Method | HTTP request | Description
  - [ResponseUploadTaskStatusInfo](docs/ResponseUploadTaskStatusInfo.md)
  - [SchemaNewUploadTaskReq](docs/SchemaNewUploadTaskReq.md)
  - [SchemaRepoInfo](docs/SchemaRepoInfo.md)
- - [SearchApp200Response](docs/SearchApp200Response.md)
  - [SignIn200Response](docs/SignIn200Response.md)
  - [UploadTaskInfo200Response](docs/UploadTaskInfo200Response.md)
 

@@ -15,36 +15,36 @@ import (
 	"encoding/json"
 )
 
-// checks if the SearchApp200Response type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &SearchApp200Response{}
+// checks if the Apiv2JSONError type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &Apiv2JSONError{}
 
-// SearchApp200Response struct for SearchApp200Response
-type SearchApp200Response struct {
+// Apiv2JSONError struct for Apiv2JSONError
+type Apiv2JSONError struct {
 	Code *int32 `json:"code,omitempty"`
-	Data *RequestRegisterStruct `json:"data,omitempty"`
+	Fields *map[string]string `json:"fields,omitempty"`
 	Msg *string `json:"msg,omitempty"`
 	TraceId *string `json:"trace_id,omitempty"`
 }
 
-// NewSearchApp200Response instantiates a new SearchApp200Response object
+// NewApiv2JSONError instantiates a new Apiv2JSONError object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewSearchApp200Response() *SearchApp200Response {
-	this := SearchApp200Response{}
+func NewApiv2JSONError() *Apiv2JSONError {
+	this := Apiv2JSONError{}
 	return &this
 }
 
-// NewSearchApp200ResponseWithDefaults instantiates a new SearchApp200Response object
+// NewApiv2JSONErrorWithDefaults instantiates a new Apiv2JSONError object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewSearchApp200ResponseWithDefaults() *SearchApp200Response {
-	this := SearchApp200Response{}
+func NewApiv2JSONErrorWithDefaults() *Apiv2JSONError {
+	this := Apiv2JSONError{}
 	return &this
 }
 
 // GetCode returns the Code field value if set, zero value otherwise.
-func (o *SearchApp200Response) GetCode() int32 {
+func (o *Apiv2JSONError) GetCode() int32 {
 	if o == nil || IsNil(o.Code) {
 		var ret int32
 		return ret
@@ -54,7 +54,7 @@ func (o *SearchApp200Response) GetCode() int32 {
 
 // GetCodeOk returns a tuple with the Code field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *SearchApp200Response) GetCodeOk() (*int32, bool) {
+func (o *Apiv2JSONError) GetCodeOk() (*int32, bool) {
 	if o == nil || IsNil(o.Code) {
 		return nil, false
 	}
@@ -62,7 +62,7 @@ func (o *SearchApp200Response) GetCodeOk() (*int32, bool) {
 }
 
 // HasCode returns a boolean if a field has been set.
-func (o *SearchApp200Response) HasCode() bool {
+func (o *Apiv2JSONError) HasCode() bool {
 	if o != nil && !IsNil(o.Code) {
 		return true
 	}
@@ -71,44 +71,44 @@ func (o *SearchApp200Response) HasCode() bool {
 }
 
 // SetCode gets a reference to the given int32 and assigns it to the Code field.
-func (o *SearchApp200Response) SetCode(v int32) {
+func (o *Apiv2JSONError) SetCode(v int32) {
 	o.Code = &v
 }
 
-// GetData returns the Data field value if set, zero value otherwise.
-func (o *SearchApp200Response) GetData() RequestRegisterStruct {
-	if o == nil || IsNil(o.Data) {
-		var ret RequestRegisterStruct
+// GetFields returns the Fields field value if set, zero value otherwise.
+func (o *Apiv2JSONError) GetFields() map[string]string {
+	if o == nil || IsNil(o.Fields) {
+		var ret map[string]string
 		return ret
 	}
-	return *o.Data
+	return *o.Fields
 }
 
-// GetDataOk returns a tuple with the Data field value if set, nil otherwise
+// GetFieldsOk returns a tuple with the Fields field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *SearchApp200Response) GetDataOk() (*RequestRegisterStruct, bool) {
-	if o == nil || IsNil(o.Data) {
+func (o *Apiv2JSONError) GetFieldsOk() (*map[string]string, bool) {
+	if o == nil || IsNil(o.Fields) {
 		return nil, false
 	}
-	return o.Data, true
+	return o.Fields, true
 }
 
-// HasData returns a boolean if a field has been set.
-func (o *SearchApp200Response) HasData() bool {
-	if o != nil && !IsNil(o.Data) {
+// HasFields returns a boolean if a field has been set.
+func (o *Apiv2JSONError) HasFields() bool {
+	if o != nil && !IsNil(o.Fields) {
 		return true
 	}
 
 	return false
 }
 
-// SetData gets a reference to the given RequestRegisterStruct and assigns it to the Data field.
-func (o *SearchApp200Response) SetData(v RequestRegisterStruct) {
-	o.Data = &v
+// SetFields gets a reference to the given map[string]string and assigns it to the Fields field.
+func (o *Apiv2JSONError) SetFields(v map[string]string) {
+	o.Fields = &v
 }
 
 // GetMsg returns the Msg field value if set, zero value otherwise.
-func (o *SearchApp200Response) GetMsg() string {
+func (o *Apiv2JSONError) GetMsg() string {
 	if o == nil || IsNil(o.Msg) {
 		var ret string
 		return ret
@@ -118,7 +118,7 @@ func (o *SearchApp200Response) GetMsg() string {
 
 // GetMsgOk returns a tuple with the Msg field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *SearchApp200Response) GetMsgOk() (*string, bool) {
+func (o *Apiv2JSONError) GetMsgOk() (*string, bool) {
 	if o == nil || IsNil(o.Msg) {
 		return nil, false
 	}
@@ -126,7 +126,7 @@ func (o *SearchApp200Response) GetMsgOk() (*string, bool) {
 }
 
 // HasMsg returns a boolean if a field has been set.
-func (o *SearchApp200Response) HasMsg() bool {
+func (o *Apiv2JSONError) HasMsg() bool {
 	if o != nil && !IsNil(o.Msg) {
 		return true
 	}
@@ -135,12 +135,12 @@ func (o *SearchApp200Response) HasMsg() bool {
 }
 
 // SetMsg gets a reference to the given string and assigns it to the Msg field.
-func (o *SearchApp200Response) SetMsg(v string) {
+func (o *Apiv2JSONError) SetMsg(v string) {
 	o.Msg = &v
 }
 
 // GetTraceId returns the TraceId field value if set, zero value otherwise.
-func (o *SearchApp200Response) GetTraceId() string {
+func (o *Apiv2JSONError) GetTraceId() string {
 	if o == nil || IsNil(o.TraceId) {
 		var ret string
 		return ret
@@ -150,7 +150,7 @@ func (o *SearchApp200Response) GetTraceId() string {
 
 // GetTraceIdOk returns a tuple with the TraceId field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *SearchApp200Response) GetTraceIdOk() (*string, bool) {
+func (o *Apiv2JSONError) GetTraceIdOk() (*string, bool) {
 	if o == nil || IsNil(o.TraceId) {
 		return nil, false
 	}
@@ -158,7 +158,7 @@ func (o *SearchApp200Response) GetTraceIdOk() (*string, bool) {
 }
 
 // HasTraceId returns a boolean if a field has been set.
-func (o *SearchApp200Response) HasTraceId() bool {
+func (o *Apiv2JSONError) HasTraceId() bool {
 	if o != nil && !IsNil(o.TraceId) {
 		return true
 	}
@@ -167,11 +167,11 @@ func (o *SearchApp200Response) HasTraceId() bool {
 }
 
 // SetTraceId gets a reference to the given string and assigns it to the TraceId field.
-func (o *SearchApp200Response) SetTraceId(v string) {
+func (o *Apiv2JSONError) SetTraceId(v string) {
 	o.TraceId = &v
 }
 
-func (o SearchApp200Response) MarshalJSON() ([]byte, error) {
+func (o Apiv2JSONError) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -179,13 +179,13 @@ func (o SearchApp200Response) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o SearchApp200Response) ToMap() (map[string]interface{}, error) {
+func (o Apiv2JSONError) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Code) {
 		toSerialize["code"] = o.Code
 	}
-	if !IsNil(o.Data) {
-		toSerialize["data"] = o.Data
+	if !IsNil(o.Fields) {
+		toSerialize["fields"] = o.Fields
 	}
 	if !IsNil(o.Msg) {
 		toSerialize["msg"] = o.Msg
@@ -196,38 +196,38 @@ func (o SearchApp200Response) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableSearchApp200Response struct {
-	value *SearchApp200Response
+type NullableApiv2JSONError struct {
+	value *Apiv2JSONError
 	isSet bool
 }
 
-func (v NullableSearchApp200Response) Get() *SearchApp200Response {
+func (v NullableApiv2JSONError) Get() *Apiv2JSONError {
 	return v.value
 }
 
-func (v *NullableSearchApp200Response) Set(val *SearchApp200Response) {
+func (v *NullableApiv2JSONError) Set(val *Apiv2JSONError) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableSearchApp200Response) IsSet() bool {
+func (v NullableApiv2JSONError) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableSearchApp200Response) Unset() {
+func (v *NullableApiv2JSONError) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableSearchApp200Response(val *SearchApp200Response) *NullableSearchApp200Response {
-	return &NullableSearchApp200Response{value: val, isSet: true}
+func NewNullableApiv2JSONError(val *Apiv2JSONError) *NullableApiv2JSONError {
+	return &NullableApiv2JSONError{value: val, isSet: true}
 }
 
-func (v NullableSearchApp200Response) MarshalJSON() ([]byte, error) {
+func (v NullableApiv2JSONError) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableSearchApp200Response) UnmarshalJSON(src []byte) error {
+func (v *NullableApiv2JSONError) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

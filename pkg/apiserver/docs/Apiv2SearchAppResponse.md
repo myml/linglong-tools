@@ -1,130 +1,104 @@
-# SearchApp200Response
+# Apiv2SearchAppResponse
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Code** | Pointer to **int32** |  | [optional] 
-**Data** | Pointer to [**RequestRegisterStruct**](RequestRegisterStruct.md) |  | [optional] 
-**Msg** | Pointer to **string** |  | [optional] 
+**Data** | Pointer to [**[]RequestRegisterStruct**](RequestRegisterStruct.md) |  | [optional] 
 **TraceId** | Pointer to **string** |  | [optional] 
 
 ## Methods
 
-### NewSearchApp200Response
+### NewApiv2SearchAppResponse
 
-`func NewSearchApp200Response() *SearchApp200Response`
+`func NewApiv2SearchAppResponse() *Apiv2SearchAppResponse`
 
-NewSearchApp200Response instantiates a new SearchApp200Response object
+NewApiv2SearchAppResponse instantiates a new Apiv2SearchAppResponse object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewSearchApp200ResponseWithDefaults
+### NewApiv2SearchAppResponseWithDefaults
 
-`func NewSearchApp200ResponseWithDefaults() *SearchApp200Response`
+`func NewApiv2SearchAppResponseWithDefaults() *Apiv2SearchAppResponse`
 
-NewSearchApp200ResponseWithDefaults instantiates a new SearchApp200Response object
+NewApiv2SearchAppResponseWithDefaults instantiates a new Apiv2SearchAppResponse object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetCode
 
-`func (o *SearchApp200Response) GetCode() int32`
+`func (o *Apiv2SearchAppResponse) GetCode() int32`
 
 GetCode returns the Code field if non-nil, zero value otherwise.
 
 ### GetCodeOk
 
-`func (o *SearchApp200Response) GetCodeOk() (*int32, bool)`
+`func (o *Apiv2SearchAppResponse) GetCodeOk() (*int32, bool)`
 
 GetCodeOk returns a tuple with the Code field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetCode
 
-`func (o *SearchApp200Response) SetCode(v int32)`
+`func (o *Apiv2SearchAppResponse) SetCode(v int32)`
 
 SetCode sets Code field to given value.
 
 ### HasCode
 
-`func (o *SearchApp200Response) HasCode() bool`
+`func (o *Apiv2SearchAppResponse) HasCode() bool`
 
 HasCode returns a boolean if a field has been set.
 
 ### GetData
 
-`func (o *SearchApp200Response) GetData() RequestRegisterStruct`
+`func (o *Apiv2SearchAppResponse) GetData() []RequestRegisterStruct`
 
 GetData returns the Data field if non-nil, zero value otherwise.
 
 ### GetDataOk
 
-`func (o *SearchApp200Response) GetDataOk() (*RequestRegisterStruct, bool)`
+`func (o *Apiv2SearchAppResponse) GetDataOk() (*[]RequestRegisterStruct, bool)`
 
 GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetData
 
-`func (o *SearchApp200Response) SetData(v RequestRegisterStruct)`
+`func (o *Apiv2SearchAppResponse) SetData(v []RequestRegisterStruct)`
 
 SetData sets Data field to given value.
 
 ### HasData
 
-`func (o *SearchApp200Response) HasData() bool`
+`func (o *Apiv2SearchAppResponse) HasData() bool`
 
 HasData returns a boolean if a field has been set.
 
-### GetMsg
-
-`func (o *SearchApp200Response) GetMsg() string`
-
-GetMsg returns the Msg field if non-nil, zero value otherwise.
-
-### GetMsgOk
-
-`func (o *SearchApp200Response) GetMsgOk() (*string, bool)`
-
-GetMsgOk returns a tuple with the Msg field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetMsg
-
-`func (o *SearchApp200Response) SetMsg(v string)`
-
-SetMsg sets Msg field to given value.
-
-### HasMsg
-
-`func (o *SearchApp200Response) HasMsg() bool`
-
-HasMsg returns a boolean if a field has been set.
-
 ### GetTraceId
 
-`func (o *SearchApp200Response) GetTraceId() string`
+`func (o *Apiv2SearchAppResponse) GetTraceId() string`
 
 GetTraceId returns the TraceId field if non-nil, zero value otherwise.
 
 ### GetTraceIdOk
 
-`func (o *SearchApp200Response) GetTraceIdOk() (*string, bool)`
+`func (o *Apiv2SearchAppResponse) GetTraceIdOk() (*string, bool)`
 
 GetTraceIdOk returns a tuple with the TraceId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetTraceId
 
-`func (o *SearchApp200Response) SetTraceId(v string)`
+`func (o *Apiv2SearchAppResponse) SetTraceId(v string)`
 
 SetTraceId sets TraceId field to given value.
 
 ### HasTraceId
 
-`func (o *SearchApp200Response) HasTraceId() bool`
+`func (o *Apiv2SearchAppResponse) HasTraceId() bool`
 
 HasTraceId returns a boolean if a field has been set.
 
