@@ -33,6 +33,9 @@ func ParseMetaInfo(r io.Reader) (*MetaInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal info data: %w", err)
 	}
+	if len(info.Info.Appid) == 0 {
+		return nil, fmt.Errorf("missing appid field in raw(%s)", buff.String())
+	}
 	info.Head = strings.TrimSpace(head)
 	info.Raw = buff.String()
 	return &info, nil
@@ -57,4 +60,5 @@ type AppInfo struct {
 	Runtime     string   `json:"runtime"`
 	Size        int      `json:"size"`
 	Version     string   `json:"version"`
+	Channel     string   `json:"channel"`
 }
