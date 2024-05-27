@@ -12,7 +12,7 @@ import (
 const (
 	DefaultRepoUrl  = "https://repo.linglong.dev"
 	DefaultRepoName = "repo"
-	DefaultChannel  = "linglong"
+	DefaultChannel  = "stable"
 	DefaultModule   = "runtime"
 	DefaultArch     = "x86_64"
 )
