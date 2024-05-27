@@ -11,8 +11,8 @@ import (
 
 const (
 	DefaultRepoUrl  = "https://repo.linglong.dev"
-	DefaultRepoName = "repo"
-	DefaultChannel  = "stable"
+	DefaultRepoName = "stable"
+	DefaultChannel  = "main"
 	DefaultModule   = "runtime"
 	DefaultArch     = "x86_64"
 )
