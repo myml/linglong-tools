@@ -13,7 +13,7 @@ const (
 	DefaultRepoUrl  = "https://repo.linglong.dev"
 	DefaultRepoName = "stable"
 	DefaultChannel  = "main"
-	DefaultModule   = "runtime"
+	DefaultModule   = "binary"
 	DefaultArch     = "x86_64"
 )
 

@@ -28,7 +28,7 @@ func DeleteRun(ctx context.Context, args DeleteArgs) error {
 	if err != nil {
 		return fmt.Errorf("init api client: %w", err)
 	}
-	_, err = client.RefDelete(ctx,
+	_, err1 := client.RefDelete(ctx,
 		args.RepoName,
 		args.RepoChannel,
 		args.AppID,
@@ -39,10 +39,26 @@ func DeleteRun(ctx context.Context, args DeleteArgs) error {
 		XToken(*token).
 		Hard("true").
 		Execute()
-	if err != nil {
-		return fmt.Errorf("send api request: %w", err)
+
+	_, err2 := client.RefDelete(ctx,
+		args.RepoName,
+		args.RepoChannel,
+		args.AppID,
+		args.Version,
+		args.Arch,
+		"runtime",
+	).
+		XToken(*token).
+		Hard("true").
+		Execute()
+	// 只要有一个成功的就算成功
+	if err1 == nil || err2 == nil {
+		return nil
 	}
-	return nil
+	if err1 != nil {
+		return fmt.Errorf("send api request: %w", err1)
+	}
+	return fmt.Errorf("send api request: %w", err2)
 }
 
 func initDeleteCmd() *cobra.Command {

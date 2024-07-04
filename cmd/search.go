@@ -50,6 +50,12 @@ func RemoteInfoRun(ctx context.Context, args RemoteInfoArgs) error {
 		}
 		return fmt.Errorf("send api request: %w", err)
 	}
+	// module 从 runtime 改成 binrary, 在这里做兼容
+	if len(result.GetData()) == 0 && args.Module == DefaultModule {
+		log.Println("test")
+		args.Module = "runtime"
+		return RemoteInfoRun(ctx, args)
+	}
 	encoder := json.NewEncoder(os.Stdout)
 	if args.PrettierOutput {
 		encoder.SetIndent("", "  ")
