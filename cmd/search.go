@@ -67,7 +67,7 @@ func initSearchCmd() *cobra.Command {
 	var searchArgs RemoteInfoArgs
 	searchCmd := &cobra.Command{
 		Use:   "search",
-		Short: "search app info from remote repo",
+		Short: "Search app info from remote repo",
 		Example: `  # search for application with id: org.deepin.org, version: 1.5.4
   linglong-tools search -r https://repo.linglong.dev -i org.deepin.home -c main -v 1.5.4 -p`,
 		Run: func(cmd *cobra.Command, args []string) {

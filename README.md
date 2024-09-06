@@ -110,3 +110,16 @@ linglong-tools delete -r https://repo.linglong.dev -i org.deepin.home -c main -v
     -h, --help：获取命令帮助信息。
     -n, --name string：指定远程仓库的名称（默认为 "repo"）。
     -r, --repo string：指定远程仓库的 URL（默认为 "https://repo.linglong.dev"）。
+
+### 提取文件
+
+可使用 linglong-tools extract 命令从 layer 中提取 erofs 镜像文件。
+
+```bash
+# 默认输出到stdout, 可使用管道重定向
+linglong-tools extract -f ./test.layer > app.img
+# 可使用output参数指定输出的文件路径
+linglong-tools extract -f ./test.layer -o app.img
+# 使用erofsfuse可挂载导出的erofs镜像文件
+erofsfuse app.img /mnt/test`
+```

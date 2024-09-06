@@ -70,7 +70,6 @@ func PushRun(ctx context.Context, args PushArgs) error {
 	if err != nil {
 		return fmt.Errorf("parse layer info: %w", err)
 	}
-	log.Printf("%#v", info)
 	_, err = f.Seek(0, 0)
 	if err != nil {
 		return fmt.Errorf("file seek: %w", err)

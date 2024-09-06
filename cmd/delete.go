@@ -65,7 +65,7 @@ func initDeleteCmd() *cobra.Command {
 	var cmdArgs DeleteArgs
 	cmd := &cobra.Command{
 		Use:   "delete",
-		Short: "delete app from remote repo",
+		Short: "Delete app from remote repo",
 		Example: `  # delete for application with id: org.deepin.org, version: 1.5.4
   linglong-tools delete -r https://repo.linglong.dev -i org.deepin.home -c main -v 1.5.4`,
 		Run: func(cmd *cobra.Command, args []string) {
