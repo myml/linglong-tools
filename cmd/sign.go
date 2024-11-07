@@ -80,7 +80,10 @@ func appendFileToTar(file string, tw *tar.Writer) error {
 			break
 		}
 
-		tw.Write(buf[:bytes])
+		_, err = tw.Write(buf[:bytes])
+		if err != nil {
+			return fmt.Errorf("write to tar failed: %w", err)
+		}
 	}
 
 	return nil
