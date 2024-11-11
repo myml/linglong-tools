@@ -7,7 +7,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -53,10 +55,32 @@ func appendFileToTar(file string, tw *tar.Writer) error {
 		return fmt.Errorf("stat failed: %w", err)
 	}
 
+	group, err := user.Current()
+	if err != nil {
+		return fmt.Errorf("get current user failed: %w", err)
+	}
+
+	gid, err := strconv.Atoi(group.Gid)
+	if err != nil {
+		return fmt.Errorf("get group id failed: %w", err)
+	}
+
+	uid, err := strconv.Atoi(group.Uid)
+	if err != nil {
+		return fmt.Errorf("get user id failed: %w", err)
+	}
+
 	hdr := &tar.Header{
-		Name: info.Name(),
-		Mode: int64(info.Mode()),
-		Size: info.Size(),
+		Name:     info.Name(),
+		Mode:     int64(info.Mode()),
+		Size:     info.Size(),
+		Gid:      gid,
+		Uid:      uid,
+		Uname:    group.Username,
+		Gname:    group.Username,
+		ModTime:  info.ModTime(),
+		Format:   tar.FormatPAX,
+		Typeflag: tar.TypeReg,
 	}
 
 	err = tw.WriteHeader(hdr)
@@ -107,7 +131,11 @@ func createTar(dir string) (string, error) {
 	defer out.Close()
 
 	tw := tar.NewWriter(out)
-	defer tw.Close()
+	defer func() {
+		if err := tw.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	for _, entry := range entries {
 		file := filepath.Join(dir, entry.Name())
