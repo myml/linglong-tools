@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"archive/tar"
+	"debug/elf"
 	"errors"
 	"fmt"
 	"log"
@@ -15,6 +16,7 @@ import (
 )
 
 type SignArgs struct {
+	Update    bool
 	File      string
 	Directory string
 }
@@ -25,7 +27,10 @@ func initSignCmd() *cobra.Command {
 		Use:   "sign",
 		Short: "Add sign files to linglong uab file",
 		Example: `  # Sign uab file
-  linglong-tools sign -f ./test.uab -d ./signs`,
+  linglong-tools sign -f ./test.uab -d ./signs
+  # Update sign data
+  linglong-tools sign -f ./test.uab -d ./signs -u
+  `,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := signRun(signArgs)
 			if err != nil {
@@ -33,6 +38,7 @@ func initSignCmd() *cobra.Command {
 			}
 		},
 	}
+	signCmd.Flags().BoolVarP(&signArgs.Update, "update", "u", false, "update sign data")
 	signCmd.Flags().StringVarP(&signArgs.File, "file", "f", "", "uab file")
 	signCmd.Flags().StringVarP(&signArgs.Directory, "directory", "d", "", "sign directory")
 
@@ -148,13 +154,18 @@ func createTar(dir string) (string, error) {
 	return tarPath, nil
 }
 
-func insertSignSection(uab string, tarPath string) error {
+func insertSignSection(uab string, tarPath string, update bool) error {
 	_, err := exec.LookPath("objcopy")
 	if err != nil {
 		return errors.New("objcopy not found")
 	}
 
-	cmd := exec.Command("objcopy", "--add-section", fmt.Sprintf("linglong.bundle.sign=%s", tarPath),
+	op := "--add-section"
+	if update {
+		op = "--update-section"
+	}
+
+	cmd := exec.Command("objcopy", op, fmt.Sprintf("linglong.bundle.sign=%s", tarPath),
 		"--set-section-flags", "linglong.bundle.sign=readonly", uab, uab)
 
 	err = cmd.Run()
@@ -163,6 +174,17 @@ func insertSignSection(uab string, tarPath string) error {
 	}
 
 	return nil
+}
+
+func checkSign(uab string) (bool, error) {
+	f, err := elf.Open(uab)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	section := f.Section("linglong.bundle.sign")
+	return section != nil, nil
 }
 
 func isElf(file string) (bool, error) {
@@ -215,13 +237,22 @@ func signRun(args SignArgs) error {
 		return fmt.Errorf("%s isn't a directory", dir)
 	}
 
+	b, err = checkSign(file)
+	if err != nil {
+		return fmt.Errorf("check sign error: %w", err)
+	}
+
+	if b && !args.Update {
+		return fmt.Errorf("file %s has been signed, use -u to update", file)
+	}
+
 	tarPath, err := createTar(dir)
 	if err != nil {
 		return fmt.Errorf("create tar file error: %w", err)
 	}
 	defer os.Remove(tarPath)
 
-	err = insertSignSection(file, tarPath)
+	err = insertSignSection(file, tarPath, args.Update)
 	if err != nil {
 		return fmt.Errorf("insert sign section error: %w", err)
 	}
