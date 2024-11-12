@@ -19,7 +19,7 @@ func Execute() {
 	rootCmd.AddCommand(initSearchCmd())
 	rootCmd.AddCommand(initDeleteCmd())
 	rootCmd.AddCommand(initExtractCmd())
-	rootCmd.AddCommand(initSignCmd())
+	rootCmd.AddCommand(initInsertCmd())
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)

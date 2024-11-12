@@ -15,21 +15,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type SignArgs struct {
+type InsertArgs struct {
 	Update    bool
 	File      string
 	Directory string
 }
 
-func initSignCmd() *cobra.Command {
-	var signArgs = SignArgs{}
+func initInsertCmd() *cobra.Command {
+	var signArgs = InsertArgs{}
 	signCmd := cobra.Command{
-		Use:   "sign",
+		Use:   "insert",
 		Short: "Add sign files to linglong uab file",
-		Example: `  # Sign uab file
-  linglong-tools sign -f ./test.uab -d ./signs
+		Example: `  # Insert sign files to uab file
+  linglong-tools insert -f ./test.uab -d ./signs
   # Update sign data
-  linglong-tools sign -f ./test.uab -d ./signs -u
+  linglong-tools insert -f ./test.uab -d ./signs -u
   `,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := signRun(signArgs)
@@ -55,7 +55,8 @@ func initSignCmd() *cobra.Command {
 	return &signCmd
 }
 
-func appendFileToTar(file string, tw *tar.Writer) error {
+func appendFileToTar(root string, file string, tw *tar.Writer) error {
+	fmt.Printf("append file: %s", file)
 	info, err := os.Stat(file)
 	if err != nil {
 		return fmt.Errorf("stat failed: %w", err)
@@ -76,8 +77,13 @@ func appendFileToTar(file string, tw *tar.Writer) error {
 		return fmt.Errorf("get user id failed: %w", err)
 	}
 
+	relPath, err := filepath.Rel(root, file)
+	if err != nil {
+		return fmt.Errorf("get relative path failed: %w", err)
+	}
+
 	hdr := &tar.Header{
-		Name:     info.Name(),
+		Name:     relPath,
 		Mode:     int64(info.Mode()),
 		Size:     info.Size(),
 		Gid:      gid,
@@ -120,15 +126,6 @@ func appendFileToTar(file string, tw *tar.Writer) error {
 }
 
 func createTar(dir string) (string, error) {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return "", fmt.Errorf("read directory %s: %w", dir, err)
-	}
-
-	if len(entries) == 0 {
-		return "", fmt.Errorf("directory %s is empty", dir)
-	}
-
 	tarPath := filepath.Join(dir, "sign.tar")
 	out, err := os.Create(tarPath)
 	if err != nil {
@@ -143,18 +140,26 @@ func createTar(dir string) (string, error) {
 		}
 	}()
 
-	for _, entry := range entries {
-		file := filepath.Join(dir, entry.Name())
-		err = appendFileToTar(file, tw)
+	err = filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
-			return "", fmt.Errorf("while processing %s: %w", file, err)
+			return err
 		}
+
+		if !d.IsDir() && d.Name() != "sign.tar" {
+			appendFileToTar(dir, path, tw)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("walk directory: %w", err)
 	}
 
 	return tarPath, nil
 }
 
-func insertSignSection(uab string, tarPath string, update bool) error {
+func insertInsertSection(uab string, tarPath string, update bool) error {
 	_, err := exec.LookPath("objcopy")
 	if err != nil {
 		return errors.New("objcopy not found")
@@ -176,7 +181,7 @@ func insertSignSection(uab string, tarPath string, update bool) error {
 	return nil
 }
 
-func checkSign(uab string) (bool, error) {
+func checkInsert(uab string) (bool, error) {
 	f, err := elf.Open(uab)
 	if err != nil {
 		return false, err
@@ -203,7 +208,7 @@ func isElf(file string) (bool, error) {
 	return check, nil
 }
 
-func signRun(args SignArgs) error {
+func signRun(args InsertArgs) error {
 	file := args.File
 	info, err := os.Stat(file)
 	if err != nil {
@@ -237,7 +242,7 @@ func signRun(args SignArgs) error {
 		return fmt.Errorf("%s isn't a directory", dir)
 	}
 
-	b, err = checkSign(file)
+	b, err = checkInsert(file)
 	if err != nil {
 		return fmt.Errorf("check sign error: %w", err)
 	}
@@ -252,7 +257,7 @@ func signRun(args SignArgs) error {
 	}
 	defer os.Remove(tarPath)
 
-	err = insertSignSection(file, tarPath, args.Update)
+	err = insertInsertSection(file, tarPath, args.Update)
 	if err != nil {
 		return fmt.Errorf("insert sign section error: %w", err)
 	}
