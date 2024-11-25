@@ -1,17 +1,16 @@
 package cmd
 
 import (
-	"debug/elf"
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 
 	"github.com/myml/linglong-tools/pkg/layer"
+	"github.com/myml/linglong-tools/pkg/uab"
 	"github.com/spf13/cobra"
 )
 
@@ -94,102 +93,13 @@ func extractUab(inputFile string, outputDir string) error {
 		return fmt.Errorf("output directory %s isn't empty", outputDir)
 	}
 
-	f, err := elf.Open(inputFile)
+	uab, err := uab.Open(inputFile)
 	if err != nil {
-		return fmt.Errorf("open uab file error: %w", err)
+		return fmt.Errorf("open uab file: %w", err)
 	}
-	defer f.Close()
+	defer uab.Close()
 
-	bundle := f.Section("linglong.bundle")
-	if bundle == nil {
-		return fmt.Errorf("%s doesn't has section linglong.bundle", inputFile)
-	}
-
-	mountPoint, err := os.MkdirTemp("", "uab-*")
-	if err != nil {
-		return fmt.Errorf("create temp mount point failed: %w", err)
-	}
-	defer os.RemoveAll(mountPoint)
-
-	cmd := exec.Command("erofsfuse", fmt.Sprintf("--offset=%d", bundle.Offset), inputFile, mountPoint)
-	if os.Getenv("LINGLONG_UAB_DEBUG") != "" {
-		cmd.Stderr = os.Stderr
-		cmd.Stdout = os.Stdout
-	}
-
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("erofsfuse error: %w", err)
-	}
-	defer func() {
-		cmd := exec.Command("umount", "-l", mountPoint)
-		cmd.Stderr = os.Stderr
-		err := cmd.Run()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "please umount %s manually", mountPoint)
-		}
-	}()
-
-	err = filepath.WalkDir(mountPoint, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return fmt.Errorf("error occurred while processing file %s: %w", path, err)
-		}
-
-		relative, err := filepath.Rel(mountPoint, path)
-		if err != nil {
-			return fmt.Errorf("error occurred while processing file %s: %w", path, err)
-		}
-
-		destination := filepath.Join(outputDir, relative)
-
-		info, err := d.Info()
-		if err != nil {
-			return fmt.Errorf("failed to get original directory %s info: %w", path, err)
-		}
-
-		if d.Type()&os.ModeSymlink != 0 {
-			target, err := os.Readlink(path)
-			if err != nil {
-				return fmt.Errorf("failed to read symlink from %s: %w", path, err)
-			}
-
-			return os.Symlink(target, destination)
-		}
-
-		if d.IsDir() {
-			err = os.MkdirAll(destination, info.Mode())
-			if err != nil {
-				return fmt.Errorf("failed to create destination directory %s: %w", destination, err)
-			}
-
-			return nil
-		}
-
-		dst, err := os.Create(destination)
-		if err != nil {
-			return fmt.Errorf("failed to create destination file %s: %w", destination, err)
-		}
-		defer dst.Close()
-
-		src, err := os.Open(path)
-		if err != nil {
-			return fmt.Errorf("failed to open source file %s: %w", path, err)
-		}
-		defer src.Close()
-
-		_, err = io.Copy(dst, src)
-		if err != nil {
-			return fmt.Errorf("failed to copy %s to %s: %w", path, destination, err)
-		}
-
-		return os.Chmod(destination, info.Mode())
-	})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return uab.Extract(outputDir)
 }
 
 func extractLayer(inputFile string, outputFile string) error {

@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/myml/linglong-tools/pkg/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,7 +20,7 @@ func TestParseMetaInfoMock(t *testing.T) {
 	assert := require.New(t)
 	appID := "test"
 	head := "<<< linglong >>>"
-	var metaInfo MetaInfo
+	var metaInfo types.LayerFileMetaInfo
 	metaInfo.Info.Appid = appID
 	payload, err := json.Marshal(metaInfo)
 	assert.NoError(err)
