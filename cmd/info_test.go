@@ -6,9 +6,10 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"path/filepath"
 	"testing"
 
-	"github.com/myml/linglong-tools/pkg/layer"
+	"github.com/myml/linglong-tools/pkg/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,7 +19,7 @@ func init() {
 
 // 生成一个临时layer文件用于测试
 // 生成一个临时layer文件用于测试
-func genLayerFile(assert *require.Assertions, info layer.MetaInfo) string {
+func genLayerFile(assert *require.Assertions, info types.LayerFileMetaInfo) string {
 	// 写入头部标识
 	var buff bytes.Buffer
 	buff.WriteString(info.Head)
@@ -37,7 +38,11 @@ func genLayerFile(assert *require.Assertions, info layer.MetaInfo) string {
 	_, err = buff.WriteString("erofs image content")
 	assert.NoError(err)
 	// 创建临时文件
-	f, err := os.CreateTemp("", "")
+	dir, err := os.MkdirTemp("", "")
+	assert.NoError(err)
+	defer os.RemoveAll(dir)
+
+	f, err := os.Create(filepath.Join(dir, "test.layer"))
 	assert.NoError(err)
 	defer f.Close()
 	// 将缓存区写入临时文件中
@@ -54,13 +59,13 @@ func TestInfoRun(t *testing.T) {
 	appID := "test"
 	infoCmd := initInfoCmd()
 	// 生成文件
-	var metaInfo layer.MetaInfo
+	var metaInfo types.LayerFileMetaInfo
 	metaInfo.Head = head
 	metaInfo.Info.Appid = appID
 	metaInfo.Info.Arch = append(metaInfo.Info.Arch, "amd64")
 	fname := genLayerFile(assert, metaInfo)
 	// 测试file参数
-	infoArgs.LayerFile = fname
+	infoArgs.InputFile = fname
 	assert.NoError(InfoRun(infoArgs))
 	// 测试prettier参数
 	infoArgs.PrettierOutput = true

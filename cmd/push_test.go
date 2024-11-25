@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/myml/linglong-tools/pkg/layer"
+	"github.com/myml/linglong-tools/pkg/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,7 +16,7 @@ func TestPushRun(t *testing.T) {
 		RepoName:    DefaultRepoName,
 		RepoChannel: DefaultChannel,
 	}
-	var metaInfo layer.MetaInfo
+	var metaInfo types.LayerFileMetaInfo
 	metaInfo.Info.Appid = "test"
 	metaInfo.Info.Arch = append(metaInfo.Info.Arch, "amd64")
 	fname := genLayerFile(assert, metaInfo)
