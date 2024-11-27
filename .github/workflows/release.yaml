@@ -16,7 +16,7 @@ jobs:
         goarch: [amd64, arm64, loong64]
     steps:
       - uses: actions/checkout@v4
-      - run: git describe --tags > cmd/version.txt
+      - run: sed -i "s#v1.0.0#$(git describe --tags)#" cmd/version_number.go
       - uses: wangyoucao577/go-release-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
