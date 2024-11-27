@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"log"
 	"os"
 	"os/exec"
@@ -120,7 +119,7 @@ func (u *UAB) Extract(outputDir string) error {
 		}
 	}()
 
-	err = filepath.WalkDir(mountPoint, func(path string, d fs.DirEntry, err error) error {
+	err = filepath.Walk(mountPoint, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("error occurred while processing file %s: %w", path, err)
 		}
@@ -131,13 +130,7 @@ func (u *UAB) Extract(outputDir string) error {
 		}
 
 		destination := filepath.Join(outputDir, relative)
-
-		info, err := d.Info()
-		if err != nil {
-			return fmt.Errorf("failed to get original directory %s info: %w", path, err)
-		}
-
-		if d.Type()&os.ModeSymlink != 0 {
+		if info.Mode()&os.ModeSymlink != 0 {
 			target, err := os.Readlink(path)
 			if err != nil {
 				return fmt.Errorf("failed to read symlink from %s: %w", path, err)
@@ -146,7 +139,7 @@ func (u *UAB) Extract(outputDir string) error {
 			return os.Symlink(target, destination)
 		}
 
-		if d.IsDir() {
+		if info.IsDir() {
 			err = os.MkdirAll(destination, info.Mode())
 			if err != nil {
 				return fmt.Errorf("failed to create destination directory %s: %w", destination, err)
