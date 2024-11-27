@@ -70,6 +70,11 @@ func extractUab(inputFile string, outputDir string) error {
 		return errors.New("erofsfuse not found")
 	}
 
+	_, err = exec.LookPath("fusermount")
+	if err != nil {
+		return errors.New("fusermount not found")
+	}
+
 	if outputDir == "" {
 		return errors.New("please specific an output directory")
 	}

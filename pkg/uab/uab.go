@@ -111,11 +111,11 @@ func (u *UAB) Extract(outputDir string) error {
 		return fmt.Errorf("erofsfuse error: %w", err)
 	}
 	defer func() {
-		cmd := exec.Command("umount", "-l", mountPoint)
+		cmd := exec.Command("fusermount", "-u", mountPoint)
 		cmd.Stderr = os.Stderr
 		err := cmd.Run()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "please umount %s manually", mountPoint)
+			fmt.Fprintf(os.Stderr, "please use fusermount to umount %s manually", mountPoint)
 		}
 	}()
 
