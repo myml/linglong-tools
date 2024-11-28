@@ -1,3 +1,6 @@
+//go:build !disable_api
+// +build !disable_api
+
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
@@ -14,6 +17,10 @@ import (
 	"github.com/myml/linglong-tools/pkg/apiserver"
 	"github.com/spf13/cobra"
 )
+
+func init() {
+	rootCmd.AddCommand(initSearchCmd())
+}
 
 type RemoteInfoArgs struct {
 	RepoUrl     string

@@ -1,3 +1,6 @@
+//go:build !disable_api
+// +build !disable_api
+
 package cmd
 
 import (

@@ -3,6 +3,7 @@ package uab
 import (
 	"encoding/binary"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -319,7 +320,7 @@ func (suite *UABTestSuite) TestExtract() {
 	assert.NoError(err)
 	defer uabFile.Close()
 
-	extractDir, err := os.MkdirTemp("", "test-extract-*")
+	extractDir, err := ioutil.TempDir("", "test-extract-*")
 	assert.NoError(err)
 	defer os.RemoveAll(extractDir)
 
@@ -338,7 +339,7 @@ func TestUABTestSuite(t *testing.T) {
 		t.Skip("objcopy not found")
 	}
 
-	temp, err := os.MkdirTemp("", "test-uabBundle-*")
+	temp, err := ioutil.TempDir("", "test-uabBundle-*")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %s", err.Error())
 	}

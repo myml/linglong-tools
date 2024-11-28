@@ -1,3 +1,6 @@
+//go:build !disable_api
+// +build !disable_api
+
 package cmd
 
 import (
@@ -12,6 +15,10 @@ import (
 	"github.com/myml/linglong-tools/pkg/layer"
 	"github.com/spf13/cobra"
 )
+
+func init() {
+	rootCmd.AddCommand(initPushCmd())
+}
 
 func initPushCmd() *cobra.Command {
 	var pushArgs PushArgs

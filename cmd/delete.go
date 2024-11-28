@@ -1,3 +1,6 @@
+//go:build !disable_api
+// +build !disable_api
+
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
@@ -21,6 +24,10 @@ type DeleteArgs struct {
 	Arch        string
 	Version     string
 	Module      string
+}
+
+func init() {
+	rootCmd.AddCommand(initDeleteCmd())
 }
 
 func DeleteRun(ctx context.Context, args DeleteArgs) error {

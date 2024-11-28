@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -94,7 +95,7 @@ func (u *UAB) Extract(outputDir string) error {
 		return fmt.Errorf("couldn't find section %s in %s", bundleSectionName, u.path)
 	}
 
-	mountPoint, err := os.MkdirTemp("", "uab-*")
+	mountPoint, err := ioutil.TempDir("", "uab-*")
 	if err != nil {
 		return fmt.Errorf("create temp mount point failed: %w", err)
 	}
@@ -260,12 +261,12 @@ func createTar(dir string) (string, error) {
 		}
 	}()
 
-	err = filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		if !d.IsDir() && d.Name() != "sign.tar" {
+		if !info.IsDir() && info.Name() != "sign.tar" {
 			return appendFileToTar(dir, path, tw)
 		}
 
