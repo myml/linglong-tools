@@ -319,7 +319,7 @@ func (a *ClientAPIService) NewUploadTaskIDExecute(r ApiNewUploadTaskIDRequest) (
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	parameterAddToHeaderOrQuery(localVarHeaderParams, "X-Token", r.xToken, "")
+	parameterAddToHeaderOrQuery(localVarHeaderParams, "X-Token", r.xToken, "", "")
 	// body params
 	localVarPostBody = r.req
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
@@ -444,7 +444,7 @@ func (a *ClientAPIService) RefDeleteExecute(r ApiRefDeleteRequest) (*http.Respon
 	}
 
 	if r.hard != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "hard", r.hard, "")
+		parameterAddToHeaderOrQuery(localVarQueryParams, "hard", r.hard, "", "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
@@ -463,7 +463,7 @@ func (a *ClientAPIService) RefDeleteExecute(r ApiRefDeleteRequest) (*http.Respon
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	parameterAddToHeaderOrQuery(localVarHeaderParams, "X-Token", r.xToken, "")
+	parameterAddToHeaderOrQuery(localVarHeaderParams, "X-Token", r.xToken, "", "")
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return nil, err
@@ -592,13 +592,13 @@ func (a *ClientAPIService) SearchAppExecute(r ApiSearchAppRequest) (*Apiv2Search
 		return localVarReturnValue, nil, reportError("module is required and must be specified")
 	}
 
-	parameterAddToHeaderOrQuery(localVarQueryParams, "repo_name", r.repoName, "")
-	parameterAddToHeaderOrQuery(localVarQueryParams, "channel", r.channel, "")
-	parameterAddToHeaderOrQuery(localVarQueryParams, "app_id", r.appId, "")
-	parameterAddToHeaderOrQuery(localVarQueryParams, "arch", r.arch, "")
-	parameterAddToHeaderOrQuery(localVarQueryParams, "module", r.module, "")
+	parameterAddToHeaderOrQuery(localVarQueryParams, "repo_name", r.repoName, "", "")
+	parameterAddToHeaderOrQuery(localVarQueryParams, "channel", r.channel, "", "")
+	parameterAddToHeaderOrQuery(localVarQueryParams, "app_id", r.appId, "", "")
+	parameterAddToHeaderOrQuery(localVarQueryParams, "arch", r.arch, "", "")
+	parameterAddToHeaderOrQuery(localVarQueryParams, "module", r.module, "", "")
 	if r.version != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "version", r.version, "")
+		parameterAddToHeaderOrQuery(localVarQueryParams, "version", r.version, "", "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
@@ -870,7 +870,7 @@ func (a *ClientAPIService) UploadTaskFileExecute(r ApiUploadTaskFileRequest) (*A
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	parameterAddToHeaderOrQuery(localVarHeaderParams, "X-Token", r.xToken, "")
+	parameterAddToHeaderOrQuery(localVarHeaderParams, "X-Token", r.xToken, "", "")
 	var fileLocalVarFormFileName string
 	var fileLocalVarFileName     string
 	var fileLocalVarFileBytes    []byte
@@ -999,7 +999,7 @@ func (a *ClientAPIService) UploadTaskInfoExecute(r ApiUploadTaskInfoRequest) (*U
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	parameterAddToHeaderOrQuery(localVarHeaderParams, "X-Token", r.xToken, "")
+	parameterAddToHeaderOrQuery(localVarHeaderParams, "X-Token", r.xToken, "", "")
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err
@@ -1121,7 +1121,7 @@ func (a *ClientAPIService) UploadTaskLayerFileExecute(r ApiUploadTaskLayerFileRe
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	parameterAddToHeaderOrQuery(localVarHeaderParams, "X-Token", r.xToken, "")
+	parameterAddToHeaderOrQuery(localVarHeaderParams, "X-Token", r.xToken, "", "")
 	var fileLocalVarFormFileName string
 	var fileLocalVarFileName     string
 	var fileLocalVarFileBytes    []byte
