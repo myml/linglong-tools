@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/myml/linglong-tools/pkg/types"
@@ -38,11 +38,7 @@ func genLayerFile(assert *require.Assertions, info types.LayerFileMetaInfo) stri
 	_, err = buff.WriteString("erofs image content")
 	assert.NoError(err)
 	// 创建临时文件
-	dir, err := os.MkdirTemp("", "")
-	assert.NoError(err)
-	defer os.RemoveAll(dir)
-
-	f, err := os.Create(filepath.Join(dir, "test.layer"))
+	f, err := ioutil.TempFile("", "test-*.layer") // for go 1.15
 	assert.NoError(err)
 	defer f.Close()
 	// 将缓存区写入临时文件中
@@ -64,6 +60,7 @@ func TestInfoRun(t *testing.T) {
 	metaInfo.Info.Appid = appID
 	metaInfo.Info.Arch = append(metaInfo.Info.Arch, "amd64")
 	fname := genLayerFile(assert, metaInfo)
+	defer os.Remove(fname)
 	// 测试file参数
 	infoArgs.InputFile = fname
 	assert.NoError(InfoRun(infoArgs))

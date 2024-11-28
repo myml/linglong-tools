@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -89,7 +90,7 @@ func extractUab(inputFile string, outputDir string) error {
 		return errors.New("output destination isn't a directory")
 	}
 
-	entries, err := os.ReadDir(outputDir)
+	entries, err := ioutil.ReadDir(outputDir)
 	if err != nil {
 		return fmt.Errorf("get status from output directory %s: %w", outputDir, err)
 	}
