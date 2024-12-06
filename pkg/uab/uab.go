@@ -177,7 +177,6 @@ func (u *UAB) Extract(outputDir string) error {
 }
 
 func appendFileToTar(root string, file string, tw *tar.Writer) error {
-	fmt.Printf("append file: %s", file)
 	info, err := os.Stat(file)
 	if err != nil {
 		return fmt.Errorf("stat failed: %w", err)
@@ -203,8 +202,12 @@ func appendFileToTar(root string, file string, tw *tar.Writer) error {
 		return fmt.Errorf("get relative path failed: %w", err)
 	}
 
+	parent := filepath.Dir(relPath)
+	name := info.Name()
+	targetPath := filepath.Join(parent, name[0:2], name)
+
 	hdr := &tar.Header{
-		Name:     relPath,
+		Name:     targetPath,
 		Mode:     int64(info.Mode()),
 		Size:     info.Size(),
 		Gid:      gid,
