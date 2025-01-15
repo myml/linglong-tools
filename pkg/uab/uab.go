@@ -204,7 +204,7 @@ func appendFileToTar(root string, file string, tw *tar.Writer) error {
 
 	parent := filepath.Dir(relPath)
 	name := info.Name()
-	targetPath := filepath.Join(parent, name[0:2], name)
+	targetPath := filepath.Join(parent, name[0:2], name[2:])
 
 	hdr := &tar.Header{
 		Name:     targetPath,
