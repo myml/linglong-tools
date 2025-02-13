@@ -18,7 +18,6 @@ func init() {
 }
 
 // 生成一个临时layer文件用于测试
-// 生成一个临时layer文件用于测试
 func genLayerFile(assert *require.Assertions, info types.LayerFileMetaInfo) string {
 	// 写入头部标识
 	var buff bytes.Buffer

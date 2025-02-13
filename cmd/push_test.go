@@ -58,7 +58,7 @@ func TestPushRun(t *testing.T) {
 	})
 	server := http.Server{Addr: ":8080", Handler: http.DefaultServeMux}
 	go func() {
-		pushArgs.LayerFile = fname
+		pushArgs.File = fname
 		pushArgs.RepoUrl = "http://test:pwd@127.0.0.1:8080"
 		// 测试推送
 		err := PushRun(context.Background(), pushArgs)

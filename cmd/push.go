@@ -4,15 +4,20 @@
 package cmd
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/myml/linglong-tools/pkg/apiserver"
 	"github.com/myml/linglong-tools/pkg/layer"
+	"github.com/myml/linglong-tools/pkg/types"
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +52,7 @@ func initPushCmd() *cobra.Command {
 			}
 		},
 	}
-	pushCmd.Flags().StringVarP(&pushArgs.LayerFile, "file", "f", "", "layer file")
+	pushCmd.Flags().StringVarP(&pushArgs.File, "file", "f", "", "layer file or tgz file")
 	pushCmd.Flags().StringVarP(&pushArgs.RepoUrl, "repo", "r", DefaultRepoUrl, "remote repo url")
 	pushCmd.Flags().StringVarP(&pushArgs.RepoName, "name", "n", DefaultRepoName, "remote repo name")
 	pushCmd.Flags().BoolVarP(&pushArgs.PrintStatus, "print", "p", false, "print all status")
@@ -60,15 +65,101 @@ func initPushCmd() *cobra.Command {
 }
 
 type PushArgs struct {
-	LayerFile   string
+	File        string
 	RepoUrl     string
 	RepoName    string
 	RepoChannel string
 	PrintStatus bool
 }
 
-func PushRun(ctx context.Context, args PushArgs) error {
-	f, err := os.Open(args.LayerFile)
+func pushTgz(ctx context.Context, args PushArgs) error {
+	var info types.LayerInfo
+	{
+		f, err := os.Open(args.File)
+		if err != nil {
+			return fmt.Errorf("open tgz file: %w", err)
+		}
+		defer f.Close()
+		r, err := gzip.NewReader(f)
+		if err != nil {
+			return fmt.Errorf("gzip: file format error: %w", err)
+		}
+		defer r.Close()
+		tarReader := tar.NewReader(r)
+		for {
+			header, err := tarReader.Next()
+			if err != nil {
+				return fmt.Errorf("tar: file format error: %w", err)
+			}
+			if header.Name == "./info.json" {
+				err = json.NewDecoder(tarReader).Decode(&info)
+				if err != nil {
+					return fmt.Errorf("parse info.json: %w", err)
+				}
+				if len(info.ID) > 0 {
+					info.Appid = info.ID
+				}
+				break
+			}
+		}
+	}
+	log.Println(UploadTaskStatusLogining)
+	api, token, err := initAPIClient(args.RepoUrl, true)
+	if err != nil {
+		return fmt.Errorf("init api: %w", err)
+	}
+	ref := fmt.Sprintf("%v/%v/%v/%v/%v",
+		args.RepoChannel,
+		info.Appid,
+		info.Version,
+		info.Arch[0],
+		info.Module,
+	)
+	log.Println(UploadTaskStatusCreating)
+	taskReq := apiserver.SchemaNewUploadTaskReq{RepoName: &args.RepoName, Ref: &ref}
+	newTaskResp, _, err := api.NewUploadTaskID(ctx).Req(taskReq).XToken(*token).Execute()
+	if err != nil {
+		return fmt.Errorf("create upload task: %w", err)
+	}
+	if newTaskResp.GetData().Id == nil {
+		return fmt.Errorf("task id is null: %s", *token)
+	}
+	log.Println(UploadTaskStatusUploading)
+
+	f, err := os.Open(args.File)
+	if err != nil {
+		return fmt.Errorf("open tgz file: %w", err)
+	}
+	_, _, err = api.UploadTaskFile(ctx, *newTaskResp.Data.Id).XToken(*token).File(f).Execute()
+	if err != nil {
+		return fmt.Errorf("upload layer file: %w", err)
+	}
+	status := ""
+	for {
+		time.Sleep(time.Second)
+		taskInfoResp, _, err := api.UploadTaskInfo(ctx, *newTaskResp.Data.Id).XToken(*token).Execute()
+		if err != nil {
+			return fmt.Errorf("get task info: %w", err)
+		}
+		if taskInfoResp.GetData().Status == nil {
+			return fmt.Errorf("task status is null: %s", taskInfoResp.GetMsg())
+		}
+		latest := taskInfoResp.Data.GetStatus()
+		if status != latest {
+			status = latest
+			log.Println(status)
+		}
+		if status == "failed" {
+			return fmt.Errorf("task(%s) failed.", newTaskResp.Data.GetId())
+		}
+		if status == "complete" {
+			return nil
+		}
+	}
+}
+
+func pushLayer(ctx context.Context, args PushArgs) error {
+	f, err := os.Open(args.File)
 	if err != nil {
 		return fmt.Errorf("open layer file: %w", err)
 	}
@@ -129,6 +220,13 @@ func PushRun(ctx context.Context, args PushArgs) error {
 			return nil
 		}
 	}
+}
+
+func PushRun(ctx context.Context, args PushArgs) error {
+	if strings.HasSuffix(args.File, ".tgz") {
+		return pushTgz(ctx, args)
+	}
+	return pushLayer(ctx, args)
 }
 
 func printStatus() {
