@@ -4,6 +4,7 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**ApiV1ReposGet**](ClientAPI.md#ApiV1ReposGet) | **Get** /api/v1/repos | 查看仓库列表
 [**FuzzySearchApp**](ClientAPI.md#FuzzySearchApp) | **Post** /api/v0/apps/fuzzysearchapp | 模糊查找App
 [**GetRepo**](ClientAPI.md#GetRepo) | **Get** /api/v1/repos/{repo} | 查看仓库信息
 [**NewUploadTaskID**](ClientAPI.md#NewUploadTaskID) | **Post** /api/v1/upload-tasks | generate a new upload task id
@@ -14,6 +15,67 @@ Method | HTTP request | Description
 [**UploadTaskInfo**](ClientAPI.md#UploadTaskInfo) | **Get** /api/v1/upload-tasks/{task_id}/status | get upload task status
 [**UploadTaskLayerFile**](ClientAPI.md#UploadTaskLayerFile) | **Put** /api/v1/upload-tasks/{task_id}/layer | upload layer file to upload task
 
+
+
+## ApiV1ReposGet
+
+> ApiV1ReposGet200Response ApiV1ReposGet(ctx).Execute()
+
+查看仓库列表
+
+
+
+### Example
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "os"
+    openapiclient "github.com/GIT_USER_ID/GIT_REPO_ID"
+)
+
+func main() {
+
+    configuration := openapiclient.NewConfiguration()
+    apiClient := openapiclient.NewAPIClient(configuration)
+    resp, r, err := apiClient.ClientAPI.ApiV1ReposGet(context.Background()).Execute()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "Error when calling `ClientAPI.ApiV1ReposGet``: %v\n", err)
+        fmt.Fprintf(os.Stderr, "Full HTTP response: %v\n", r)
+    }
+    // response from `ApiV1ReposGet`: ApiV1ReposGet200Response
+    fmt.Fprintf(os.Stdout, "Response from `ClientAPI.ApiV1ReposGet`: %v\n", resp)
+}
+```
+
+### Path Parameters
+
+This endpoint does not need any parameter.
+
+### Other Parameters
+
+Other parameters are passed through a pointer to a apiApiV1ReposGetRequest struct via the builder pattern
+
+
+### Return type
+
+[**ApiV1ReposGet200Response**](ApiV1ReposGet200Response.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: */*
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints)
+[[Back to Model list]](../README.md#documentation-for-models)
+[[Back to README]](../README.md)
 
 
 ## FuzzySearchApp

@@ -22,14 +22,16 @@ var _ MappedNullable = &RequestRegisterStruct{}
 type RequestRegisterStruct struct {
 	AppId *string `json:"appId,omitempty"`
 	Arch *string `json:"arch,omitempty"`
+	Base *string `json:"base,omitempty"`
 	Channel *string `json:"channel,omitempty"`
 	Description *string `json:"description,omitempty"`
+	Id *string `json:"id,omitempty"`
 	Kind *string `json:"kind,omitempty"`
 	Module *string `json:"module,omitempty"`
 	Name *string `json:"name,omitempty"`
 	RepoName *string `json:"repoName,omitempty"`
 	Runtime *string `json:"runtime,omitempty"`
-	Size *int32 `json:"size,omitempty"`
+	Size *int64 `json:"size,omitempty"`
 	UabUrl *string `json:"uabUrl,omitempty"`
 	Version *string `json:"version,omitempty"`
 }
@@ -115,6 +117,38 @@ func (o *RequestRegisterStruct) SetArch(v string) {
 	o.Arch = &v
 }
 
+// GetBase returns the Base field value if set, zero value otherwise.
+func (o *RequestRegisterStruct) GetBase() string {
+	if o == nil || IsNil(o.Base) {
+		var ret string
+		return ret
+	}
+	return *o.Base
+}
+
+// GetBaseOk returns a tuple with the Base field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *RequestRegisterStruct) GetBaseOk() (*string, bool) {
+	if o == nil || IsNil(o.Base) {
+		return nil, false
+	}
+	return o.Base, true
+}
+
+// HasBase returns a boolean if a field has been set.
+func (o *RequestRegisterStruct) HasBase() bool {
+	if o != nil && !IsNil(o.Base) {
+		return true
+	}
+
+	return false
+}
+
+// SetBase gets a reference to the given string and assigns it to the Base field.
+func (o *RequestRegisterStruct) SetBase(v string) {
+	o.Base = &v
+}
+
 // GetChannel returns the Channel field value if set, zero value otherwise.
 func (o *RequestRegisterStruct) GetChannel() string {
 	if o == nil || IsNil(o.Channel) {
@@ -177,6 +211,38 @@ func (o *RequestRegisterStruct) HasDescription() bool {
 // SetDescription gets a reference to the given string and assigns it to the Description field.
 func (o *RequestRegisterStruct) SetDescription(v string) {
 	o.Description = &v
+}
+
+// GetId returns the Id field value if set, zero value otherwise.
+func (o *RequestRegisterStruct) GetId() string {
+	if o == nil || IsNil(o.Id) {
+		var ret string
+		return ret
+	}
+	return *o.Id
+}
+
+// GetIdOk returns a tuple with the Id field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *RequestRegisterStruct) GetIdOk() (*string, bool) {
+	if o == nil || IsNil(o.Id) {
+		return nil, false
+	}
+	return o.Id, true
+}
+
+// HasId returns a boolean if a field has been set.
+func (o *RequestRegisterStruct) HasId() bool {
+	if o != nil && !IsNil(o.Id) {
+		return true
+	}
+
+	return false
+}
+
+// SetId gets a reference to the given string and assigns it to the Id field.
+func (o *RequestRegisterStruct) SetId(v string) {
+	o.Id = &v
 }
 
 // GetKind returns the Kind field value if set, zero value otherwise.
@@ -340,9 +406,9 @@ func (o *RequestRegisterStruct) SetRuntime(v string) {
 }
 
 // GetSize returns the Size field value if set, zero value otherwise.
-func (o *RequestRegisterStruct) GetSize() int32 {
+func (o *RequestRegisterStruct) GetSize() int64 {
 	if o == nil || IsNil(o.Size) {
-		var ret int32
+		var ret int64
 		return ret
 	}
 	return *o.Size
@@ -350,7 +416,7 @@ func (o *RequestRegisterStruct) GetSize() int32 {
 
 // GetSizeOk returns a tuple with the Size field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *RequestRegisterStruct) GetSizeOk() (*int32, bool) {
+func (o *RequestRegisterStruct) GetSizeOk() (*int64, bool) {
 	if o == nil || IsNil(o.Size) {
 		return nil, false
 	}
@@ -366,8 +432,8 @@ func (o *RequestRegisterStruct) HasSize() bool {
 	return false
 }
 
-// SetSize gets a reference to the given int32 and assigns it to the Size field.
-func (o *RequestRegisterStruct) SetSize(v int32) {
+// SetSize gets a reference to the given int64 and assigns it to the Size field.
+func (o *RequestRegisterStruct) SetSize(v int64) {
 	o.Size = &v
 }
 
@@ -451,11 +517,17 @@ func (o RequestRegisterStruct) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Arch) {
 		toSerialize["arch"] = o.Arch
 	}
+	if !IsNil(o.Base) {
+		toSerialize["base"] = o.Base
+	}
 	if !IsNil(o.Channel) {
 		toSerialize["channel"] = o.Channel
 	}
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
+	}
+	if !IsNil(o.Id) {
+		toSerialize["id"] = o.Id
 	}
 	if !IsNil(o.Kind) {
 		toSerialize["kind"] = o.Kind

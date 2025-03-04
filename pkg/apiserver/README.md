@@ -78,6 +78,7 @@ All URIs are relative to *http://localhost*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*ClientAPI* | [**ApiV1ReposGet**](docs/ClientAPI.md#apiv1reposget) | **Get** /api/v1/repos | 查看仓库列表
 *ClientAPI* | [**FuzzySearchApp**](docs/ClientAPI.md#fuzzysearchapp) | **Post** /api/v0/apps/fuzzysearchapp | 模糊查找App
 *ClientAPI* | [**GetRepo**](docs/ClientAPI.md#getrepo) | **Get** /api/v1/repos/{repo} | 查看仓库信息
 *ClientAPI* | [**NewUploadTaskID**](docs/ClientAPI.md#newuploadtaskid) | **Post** /api/v1/upload-tasks | generate a new upload task id
@@ -94,6 +95,7 @@ Class | Method | HTTP request | Description
  - [ApiJSONResult](docs/ApiJSONResult.md)
  - [ApiUploadTaskFileResp](docs/ApiUploadTaskFileResp.md)
  - [ApiUploadTaskLayerFileResp](docs/ApiUploadTaskLayerFileResp.md)
+ - [ApiV1ReposGet200Response](docs/ApiV1ReposGet200Response.md)
  - [Apiv2JSONError](docs/Apiv2JSONError.md)
  - [Apiv2SearchAppResponse](docs/Apiv2SearchAppResponse.md)
  - [FuzzySearchApp200Response](docs/FuzzySearchApp200Response.md)

@@ -6,14 +6,16 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **AppId** | Pointer to **string** |  | [optional] 
 **Arch** | Pointer to **string** |  | [optional] 
+**Base** | Pointer to **string** |  | [optional] 
 **Channel** | Pointer to **string** |  | [optional] 
 **Description** | Pointer to **string** |  | [optional] 
+**Id** | Pointer to **string** |  | [optional] 
 **Kind** | Pointer to **string** |  | [optional] 
 **Module** | Pointer to **string** |  | [optional] 
 **Name** | Pointer to **string** |  | [optional] 
 **RepoName** | Pointer to **string** |  | [optional] 
 **Runtime** | Pointer to **string** |  | [optional] 
-**Size** | Pointer to **int32** |  | [optional] 
+**Size** | Pointer to **int64** |  | [optional] 
 **UabUrl** | Pointer to **string** |  | [optional] 
 **Version** | Pointer to **string** |  | [optional] 
 
@@ -86,6 +88,31 @@ SetArch sets Arch field to given value.
 
 HasArch returns a boolean if a field has been set.
 
+### GetBase
+
+`func (o *RequestRegisterStruct) GetBase() string`
+
+GetBase returns the Base field if non-nil, zero value otherwise.
+
+### GetBaseOk
+
+`func (o *RequestRegisterStruct) GetBaseOk() (*string, bool)`
+
+GetBaseOk returns a tuple with the Base field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetBase
+
+`func (o *RequestRegisterStruct) SetBase(v string)`
+
+SetBase sets Base field to given value.
+
+### HasBase
+
+`func (o *RequestRegisterStruct) HasBase() bool`
+
+HasBase returns a boolean if a field has been set.
+
 ### GetChannel
 
 `func (o *RequestRegisterStruct) GetChannel() string`
@@ -135,6 +162,31 @@ SetDescription sets Description field to given value.
 `func (o *RequestRegisterStruct) HasDescription() bool`
 
 HasDescription returns a boolean if a field has been set.
+
+### GetId
+
+`func (o *RequestRegisterStruct) GetId() string`
+
+GetId returns the Id field if non-nil, zero value otherwise.
+
+### GetIdOk
+
+`func (o *RequestRegisterStruct) GetIdOk() (*string, bool)`
+
+GetIdOk returns a tuple with the Id field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetId
+
+`func (o *RequestRegisterStruct) SetId(v string)`
+
+SetId sets Id field to given value.
+
+### HasId
+
+`func (o *RequestRegisterStruct) HasId() bool`
+
+HasId returns a boolean if a field has been set.
 
 ### GetKind
 
@@ -263,20 +315,20 @@ HasRuntime returns a boolean if a field has been set.
 
 ### GetSize
 
-`func (o *RequestRegisterStruct) GetSize() int32`
+`func (o *RequestRegisterStruct) GetSize() int64`
 
 GetSize returns the Size field if non-nil, zero value otherwise.
 
 ### GetSizeOk
 
-`func (o *RequestRegisterStruct) GetSizeOk() (*int32, bool)`
+`func (o *RequestRegisterStruct) GetSizeOk() (*int64, bool)`
 
 GetSizeOk returns a tuple with the Size field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetSize
 
-`func (o *RequestRegisterStruct) SetSize(v int32)`
+`func (o *RequestRegisterStruct) SetSize(v int64)`
 
 SetSize sets Size field to given value.
 

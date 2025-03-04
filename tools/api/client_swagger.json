@@ -60,6 +60,39 @@
                 }
             }
         },
+        "/api/v1/repos": {
+            "get": {
+                "description": "returns repository mode and resolve all branches",
+                "tags": [
+                    "Client",
+                    "Repo"
+                ],
+                "summary": "查看仓库列表",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.JSONResult"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/schema.RepoInfo"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/repos/{repo}": {
             "get": {
                 "description": "returns repository mode and resolve all branches",
@@ -619,10 +652,16 @@
                 "arch": {
                     "type": "string"
                 },
+                "base": {
+                    "type": "string"
+                },
                 "channel": {
                     "type": "string"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 },
                 "kind": {
@@ -641,7 +680,8 @@
                     "type": "string"
                 },
                 "size": {
-                    "type": "integer"
+                    "type": "integer",
+                    "format": "int64"
                 },
                 "uabUrl": {
                     "type": "string"

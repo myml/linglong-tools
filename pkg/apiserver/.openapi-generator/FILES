@@ -9,6 +9,7 @@ configuration.go
 docs/ApiJSONResult.md
 docs/ApiUploadTaskFileResp.md
 docs/ApiUploadTaskLayerFileResp.md
+docs/ApiV1ReposGet200Response.md
 docs/Apiv2JSONError.md
 docs/Apiv2SearchAppResponse.md
 docs/ClientAPI.md
@@ -27,6 +28,7 @@ docs/SchemaRepoInfo.md
 docs/SignIn200Response.md
 docs/UploadTaskInfo200Response.md
 git_push.sh
+model__api_v1_repos_get_200_response.go
 model_api_json_result.go
 model_api_upload_task_file_resp.go
 model_api_upload_task_layer_file_resp.go

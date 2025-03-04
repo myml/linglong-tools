@@ -31,6 +31,19 @@ paths:
       tags:
       - Client
       x-codegen-request-body-name: data
+  /api/v1/repos:
+    get:
+      description: returns repository mode and resolve all branches
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/_api_v1_repos_get_200_response'
+          description: OK
+      summary: 查看仓库列表
+      tags:
+      - Client
   /api/v1/repos/{repo}:
     get:
       description: returns repository mode and resolve all branches
@@ -375,30 +388,34 @@ components:
         trace_id: trace_id
         code: 0
         data:
-        - uabUrl: uabUrl
-          size: 6
-          kind: kind
+        - kind: kind
           repoName: repoName
-          appId: appId
           module: module
           channel: channel
-          name: name
           description: description
           runtime: runtime
-          arch: arch
           version: version
-        - uabUrl: uabUrl
+          uabUrl: uabUrl
           size: 6
-          kind: kind
-          repoName: repoName
           appId: appId
+          name: name
+          arch: arch
+          id: id
+          base: base
+        - kind: kind
+          repoName: repoName
           module: module
           channel: channel
-          name: name
           description: description
           runtime: runtime
-          arch: arch
           version: version
+          uabUrl: uabUrl
+          size: 6
+          appId: appId
+          name: name
+          arch: arch
+          id: id
+          base: base
       properties:
         code:
           type: integer
@@ -433,26 +450,32 @@ components:
       type: object
     request.RegisterStruct:
       example:
-        uabUrl: uabUrl
-        size: 6
         kind: kind
         repoName: repoName
-        appId: appId
         module: module
         channel: channel
-        name: name
         description: description
         runtime: runtime
-        arch: arch
         version: version
+        uabUrl: uabUrl
+        size: 6
+        appId: appId
+        name: name
+        arch: arch
+        id: id
+        base: base
       properties:
         appId:
           type: string
         arch:
           type: string
+        base:
+          type: string
         channel:
           type: string
         description:
+          type: string
+        id:
           type: string
         kind:
           type: string
@@ -465,6 +488,7 @@ components:
         runtime:
           type: string
         size:
+          format: int64
           type: integer
         uabUrl:
           type: string
@@ -518,6 +542,15 @@ components:
           data:
             items:
               $ref: '#/components/schemas/request.RegisterStruct'
+            type: array
+        type: object
+    _api_v1_repos_get_200_response:
+      allOf:
+      - $ref: '#/components/schemas/api.JSONResult'
+      - properties:
+          data:
+            items:
+              $ref: '#/components/schemas/schema.RepoInfo'
             type: array
         type: object
     GetRepo_200_response:
