@@ -20,7 +20,7 @@ type LayerInfo struct {
 	Module        string                `json:"module"`
 	Name          string                `json:"name"`
 	Runtime       string                `json:"runtime"`
-	Size          int                   `json:"size"`
+	Size          int64                 `json:"size"`
 	Version       string                `json:"version"`
 	Channel       string                `json:"channel"`
 	SchemaVersion string                `json:"schema_version"`

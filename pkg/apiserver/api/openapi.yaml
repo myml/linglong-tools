@@ -358,12 +358,6 @@ components:
           type: string
       type: object
     apiv2.JSONError:
-      example:
-        msg: msg
-        trace_id: trace_id
-        code: 6
-        fields:
-          key: fields
       properties:
         code:
           type: integer
@@ -478,15 +472,11 @@ components:
           type: string
       type: object
     response.NewUploadTaskResp:
-      example:
-        id: id
       properties:
         id:
           type: string
       type: object
     response.SignIn:
-      example:
-        token: token
       properties:
         token:
           type: string
@@ -499,8 +489,6 @@ components:
           type: string
       type: object
     response.UploadTaskStatusInfo:
-      example:
-        status: status
       properties:
         status:
           type: string
@@ -513,12 +501,6 @@ components:
           type: string
       type: object
     schema.RepoInfo:
-      example:
-        mode: mode
-        refs:
-        - refs
-        - refs
-        name: name
       properties:
         mode:
           type: string
@@ -538,35 +520,6 @@ components:
               $ref: '#/components/schemas/request.RegisterStruct'
             type: array
         type: object
-      example:
-        msg: msg
-        trace_id: trace_id
-        code: 0
-        data:
-        - uabUrl: uabUrl
-          size: 6
-          kind: kind
-          repoName: repoName
-          appId: appId
-          module: module
-          channel: channel
-          name: name
-          description: description
-          runtime: runtime
-          arch: arch
-          version: version
-        - uabUrl: uabUrl
-          size: 6
-          kind: kind
-          repoName: repoName
-          appId: appId
-          module: module
-          channel: channel
-          name: name
-          description: description
-          runtime: runtime
-          arch: arch
-          version: version
     GetRepo_200_response:
       allOf:
       - $ref: '#/components/schemas/api.JSONResult'
@@ -574,16 +527,6 @@ components:
           data:
             $ref: '#/components/schemas/schema.RepoInfo'
         type: object
-      example:
-        msg: msg
-        trace_id: trace_id
-        code: 0
-        data:
-          mode: mode
-          refs:
-          - refs
-          - refs
-          name: name
     SignIn_200_response:
       allOf:
       - $ref: '#/components/schemas/api.JSONResult'
@@ -591,12 +534,6 @@ components:
           data:
             $ref: '#/components/schemas/response.SignIn'
         type: object
-      example:
-        msg: msg
-        trace_id: trace_id
-        code: 0
-        data:
-          token: token
     NewUploadTaskID_200_response:
       allOf:
       - $ref: '#/components/schemas/api.JSONResult'
@@ -604,12 +541,6 @@ components:
           data:
             $ref: '#/components/schemas/response.NewUploadTaskResp'
         type: object
-      example:
-        msg: msg
-        trace_id: trace_id
-        code: 0
-        data:
-          id: id
     UploadTaskLayerFile_request:
       properties:
         file:
@@ -626,12 +557,6 @@ components:
           data:
             $ref: '#/components/schemas/response.UploadTaskStatusInfo'
         type: object
-      example:
-        msg: msg
-        trace_id: trace_id
-        code: 0
-        data:
-          status: status
   securitySchemes:
     Token:
       description: '"调用sign-in后获取的token"'
