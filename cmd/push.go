@@ -10,7 +10,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"mime/multipart"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -125,14 +128,47 @@ func pushTgz(ctx context.Context, args PushArgs) error {
 		return fmt.Errorf("task id is null: %s", *token)
 	}
 	log.Println(UploadTaskStatusUploading)
-
-	f, err := os.Open(args.File)
-	if err != nil {
-		return fmt.Errorf("open tgz file: %w", err)
-	}
-	_, _, err = api.UploadTaskFile(ctx, *newTaskResp.Data.Id).XToken(*token).File(f).Execute()
-	if err != nil {
-		return fmt.Errorf("upload layer file: %w", err)
+	// openapi生成的上传文件代码需要将整个文件读取到内存，不适合大文件上传
+	{
+		f, err := os.Open(args.File)
+		if err != nil {
+			return fmt.Errorf("open tgz file: %w", err)
+		}
+		r, w := io.Pipe()
+		m := multipart.NewWriter(w)
+		contentType := m.FormDataContentType()
+		go func() {
+			defer w.Close()
+			part, err := m.CreateFormFile("file", f.Name())
+			if err != nil {
+				w.CloseWithError(err)
+				return
+			}
+			if _, err = io.Copy(part, f); err != nil {
+				w.CloseWithError(err)
+				return
+			}
+			err = m.Close()
+			if err != nil {
+				w.CloseWithError(err)
+				return
+			}
+		}()
+		reqUrl := fmt.Sprintf("%s/api/v1/upload-tasks/%s/tar", args.RepoUrl, *newTaskResp.Data.Id)
+		req, err := http.NewRequest(http.MethodPut, reqUrl, r)
+		if err != nil {
+			return fmt.Errorf("create http request: %w", err)
+		}
+		req.Header.Set("X-Token", *token)
+		req.Header.Set("Content-Type", contentType)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return fmt.Errorf("upload tgz file: %w", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("upload tgz file: %s", resp.Status)
+		}
 	}
 	status := ""
 	for {
@@ -194,10 +230,50 @@ func pushLayer(ctx context.Context, args PushArgs) error {
 		return fmt.Errorf("task id is null: %s", *token)
 	}
 	log.Println(UploadTaskStatusUploading)
-	_, _, err = api.UploadTaskLayerFile(ctx, *newTaskResp.Data.Id).XToken(*token).File(f).Execute()
-	if err != nil {
-		return fmt.Errorf("upload layer file: %w", err)
+
+	// openapi生成的上传文件代码需要将整个文件读取到内存，不适合大文件上传
+	{
+		f, err := os.Open(args.File)
+		if err != nil {
+			return fmt.Errorf("open tgz file: %w", err)
+		}
+		r, w := io.Pipe()
+		m := multipart.NewWriter(w)
+		contentType := m.FormDataContentType()
+		go func() {
+			defer w.Close()
+			part, err := m.CreateFormFile("file", f.Name())
+			if err != nil {
+				w.CloseWithError(err)
+				return
+			}
+			if _, err = io.Copy(part, f); err != nil {
+				w.CloseWithError(err)
+				return
+			}
+			err = m.Close()
+			if err != nil {
+				w.CloseWithError(err)
+				return
+			}
+		}()
+		reqUrl := fmt.Sprintf("%s/api/v1/upload-tasks/%s/layer", args.RepoUrl, *newTaskResp.Data.Id)
+		req, err := http.NewRequest(http.MethodPut, reqUrl, r)
+		if err != nil {
+			return fmt.Errorf("create http request: %w", err)
+		}
+		req.Header.Set("X-Token", *token)
+		req.Header.Set("Content-Type", contentType)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return fmt.Errorf("upload layer file: %w", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("upload layer file: %s", resp.Status)
+		}
 	}
+
 	status := ""
 	for {
 		time.Sleep(time.Second)
