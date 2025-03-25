@@ -26,9 +26,9 @@ func initAPIClient(repoUrl string, login bool) (client *apiserver.ClientAPIServi
 	if err != nil {
 		return nil, nil, fmt.Errorf("parse repo url: %w", err)
 	}
+
 	cfg := apiserver.NewConfiguration()
-	cfg.Scheme = u.Scheme
-	cfg.Host = u.Host
+	cfg.Servers[0].URL = repoUrl
 	api := apiserver.NewAPIClient(cfg)
 	if login {
 		username, password := os.Getenv("LINGLONG_USERNAME"), os.Getenv("LINGLONG_PASSWORD")
