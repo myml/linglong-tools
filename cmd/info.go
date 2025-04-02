@@ -9,11 +9,19 @@ import (
 	"text/template"
 
 	"github.com/myml/linglong-tools/pkg/layer"
+	"github.com/myml/linglong-tools/pkg/types"
 	"github.com/myml/linglong-tools/pkg/uab"
 	"github.com/spf13/cobra"
 )
 
+type InfoArgs struct {
+	InputFile      string
+	FormatOutput   string
+	PrettierOutput bool
+}
+
 func initInfoCmd() *cobra.Command {
+	var infoArgs = InfoArgs{}
 	infoCmd := cobra.Command{
 		Use:   "info",
 		Short: "Get info of linglong layer/uab file",
@@ -42,14 +50,6 @@ func initInfoCmd() *cobra.Command {
 	}
 	return &infoCmd
 }
-
-type InfoArgs struct {
-	InputFile      string
-	FormatOutput   string
-	PrettierOutput bool
-}
-
-var infoArgs = InfoArgs{}
 
 // infoCmd represents the info command
 
@@ -100,13 +100,31 @@ func layerInfo(args InfoArgs) error {
 }
 
 func uabInfo(args InfoArgs) error {
-	uab, err := uab.Open(infoArgs.InputFile)
+	uab, err := uab.Open(args.InputFile)
 	if err != nil {
 		return fmt.Errorf("open uab file: %w", err)
 	}
 	defer uab.Close()
 
-	info := uab.MetaInfo()
+	meta := uab.MetaInfo()
+	var info struct {
+		Info *types.LayerInfo `json:"info"`
+		Raw  string           `json:"raw"`
+	}
+	for i := range meta.Layers {
+		if meta.Layers[i].Info.Kind == "app" {
+			info.Info = &meta.Layers[i].Info
+			data, err := json.Marshal(info.Info)
+			if err != nil {
+				return fmt.Errorf("marshal app layer info: %w", err)
+			}
+			info.Raw = string(data)
+			break
+		}
+	}
+	if info.Info == nil {
+		return fmt.Errorf("no app layer found in uab file")
+	}
 	if len(args.FormatOutput) > 0 {
 		template, err := template.New("").Parse(args.FormatOutput)
 		if err != nil {

@@ -52,7 +52,6 @@ func TestInfoRun(t *testing.T) {
 	assert := require.New(t)
 	head := "<<< linglong >>>"
 	appID := "test"
-	infoCmd := initInfoCmd()
 	// 生成文件
 	var metaInfo types.LayerFileMetaInfo
 	metaInfo.Head = head
@@ -60,6 +59,8 @@ func TestInfoRun(t *testing.T) {
 	metaInfo.Info.Arch = append(metaInfo.Info.Arch, "amd64")
 	fname := genLayerFile(assert, metaInfo)
 	defer os.Remove(fname)
+	assert.NotEmpty(fname)
+	var infoArgs InfoArgs
 	// 测试file参数
 	infoArgs.InputFile = fname
 	assert.NoError(InfoRun(infoArgs))
@@ -71,7 +72,6 @@ func TestInfoRun(t *testing.T) {
 	assert.NoError(InfoRun(infoArgs))
 	infoArgs.FormatOutput = "{{ index .Info.Arch 0 }}"
 	assert.NoError(InfoRun(infoArgs))
-	infoCmd.Run(nil, nil)
 	// 测试format数组越界
 	infoArgs.FormatOutput = "{{ index .Info.Arch 1 }}"
 	assert.Error(InfoRun(infoArgs))
