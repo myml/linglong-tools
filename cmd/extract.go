@@ -66,14 +66,9 @@ func extractRun(args ExtractArgs) error {
 }
 
 func extractUab(inputFile string, outputDir string) error {
-	_, err := exec.LookPath("erofsfuse")
+	_, err := exec.LookPath("fsck.erofs")
 	if err != nil {
-		return errors.New("erofsfuse not found")
-	}
-
-	_, err = exec.LookPath("fusermount")
-	if err != nil {
-		return errors.New("fusermount not found")
+		return errors.New("fsck.erofs not found")
 	}
 
 	if outputDir == "" {
@@ -99,13 +94,17 @@ func extractUab(inputFile string, outputDir string) error {
 		return fmt.Errorf("output directory %s isn't empty", outputDir)
 	}
 
-	uab, err := uab.Open(inputFile)
+	uabFile, err := uab.Open(inputFile)
 	if err != nil {
 		return fmt.Errorf("open uab file: %w", err)
 	}
-	defer uab.Close()
+	defer uabFile.Close()
 
-	return uab.Extract(outputDir)
+	err = uabFile.Extract(outputDir)
+	if err != nil {
+		return fmt.Errorf("extract uab file: %w", err)
+	}
+	return nil
 }
 
 func extractLayer(inputFile string, outputFile string) error {

@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -89,88 +88,47 @@ func (u *UAB) Extract(outputDir string) error {
 	if !exist {
 		return errors.New("couldn't find bundle section name")
 	}
-
+	// 解压应用数据
 	bundle := u.elf.Section(bundleSectionName)
 	if bundle == nil {
 		return fmt.Errorf("couldn't find section %s in %s", bundleSectionName, u.path)
 	}
 
-	mountPoint, err := ioutil.TempDir("", "uab-*")
-	if err != nil {
-		return fmt.Errorf("create temp mount point failed: %w", err)
-	}
-	defer os.RemoveAll(mountPoint)
-
-	cmd := exec.Command("erofsfuse", fmt.Sprintf("--offset=%d", bundle.Offset), u.path, mountPoint)
+	cmd := exec.Command("fsck.erofs",
+		fmt.Sprintf("--offset=%d", bundle.Offset),
+		fmt.Sprintf("--extract=%s", outputDir),
+		u.path,
+	)
 	if os.Getenv("LINGLONG_UAB_DEBUG") != "" {
 		cmd.Stderr = os.Stderr
 		cmd.Stdout = os.Stdout
-	}
-
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("erofsfuse error: %w", err)
-	}
-	defer func() {
-		cmd := exec.Command("fusermount", "-u", mountPoint)
-		cmd.Stderr = os.Stderr
 		err := cmd.Run()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "please use fusermount to umount %s manually", mountPoint)
+			return fmt.Errorf("fsck erofs failed: %w", err)
 		}
-	}()
-
-	err = filepath.Walk(mountPoint, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return fmt.Errorf("error occurred while processing file %s: %w", path, err)
-		}
-
-		relative, err := filepath.Rel(mountPoint, path)
-		if err != nil {
-			return fmt.Errorf("error occurred while processing file %s: %w", path, err)
-		}
-
-		destination := filepath.Join(outputDir, relative)
-		if info.Mode()&os.ModeSymlink != 0 {
-			target, err := os.Readlink(path)
-			if err != nil {
-				return fmt.Errorf("failed to read symlink from %s: %w", path, err)
-			}
-
-			return os.Symlink(target, destination)
-		}
-
-		if info.IsDir() {
-			err = os.MkdirAll(destination, info.Mode())
-			if err != nil {
-				return fmt.Errorf("failed to create destination directory %s: %w", destination, err)
-			}
-
-			return nil
-		}
-
-		dst, err := os.Create(destination)
-		if err != nil {
-			return fmt.Errorf("failed to create destination file %s: %w", destination, err)
-		}
-		defer dst.Close()
-
-		src, err := os.Open(path)
-		if err != nil {
-			return fmt.Errorf("failed to open source file %s: %w", path, err)
-		}
-		defer src.Close()
-
-		_, err = io.Copy(dst, src)
-		if err != nil {
-			return fmt.Errorf("failed to copy %s to %s: %w", path, destination, err)
-		}
-
-		return os.Chmod(destination, info.Mode())
-	})
-
+		return nil
+	}
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("fsck erofs failed: %w, %s", err, out)
+	}
+
+	// 解压签名数据
+	if u.HasSign() {
+		appLayerPath, err := u.AppLayerPath()
+		if err != nil {
+			return fmt.Errorf("get app layer path error: %w", err)
+		}
+		appLayerPath = filepath.Join(outputDir, appLayerPath)
+		signPath := filepath.Join(appLayerPath, "entries/share/deepin-elf-verify/.elfsign")
+		err = os.MkdirAll(signPath, 0755)
+		if err != nil && !errors.Is(err, os.ErrExist) {
+			return fmt.Errorf("mkdir sign path: %w", err)
+		}
+		err = u.ExtractSign(signPath)
+		if err != nil {
+			return fmt.Errorf("extract uab sign: %w", err)
+		}
 	}
 
 	return nil
@@ -313,4 +271,58 @@ func (u *UAB) InsertSign(dataDir string, update bool) error {
 	defer os.Remove(tarPath)
 
 	return u.insertSection(tarPath, update)
+}
+
+func (u *UAB) HasSign() bool {
+	bundleSectionName := "linglong.bundle.sign"
+	bundleSign := u.elf.Section(bundleSectionName)
+	return bundleSign != nil
+}
+
+func (u *UAB) AppLayerPath() (string, error) {
+	meta := u.MetaInfo()
+	layers := meta.Layers
+	for i := range layers {
+		if layers[i].Info.Kind == "app" {
+			info := layers[i].Info
+			return filepath.Join("layers", info.ID, info.Module), nil
+		}
+	}
+	return "", fmt.Errorf("couldn't find app layer in layers")
+}
+
+func (u *UAB) ExtractSign(outputDir string) error {
+	bundleSectionName := "linglong.bundle.sign"
+	bundleSign := u.elf.Section(bundleSectionName)
+	if bundleSign == nil {
+		return fmt.Errorf("couldn't find section %s in %s", bundleSectionName, u.path)
+	}
+	r := bundleSign.Open()
+	tarReader := tar.NewReader(r)
+	for {
+		header, err := tarReader.Next()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return fmt.Errorf("read sign data: %w", err)
+		}
+		out := filepath.Join(outputDir, header.Name)
+		switch header.Typeflag {
+		case tar.TypeReg:
+			err = os.MkdirAll(filepath.Dir(out), 0755)
+			if err != nil && !errors.Is(err, os.ErrNotExist) {
+				return fmt.Errorf("ExtractTarGz: MkdirAll() failed: %w", err)
+			}
+			outFile, err := os.Create(out)
+			if err != nil {
+				return fmt.Errorf("extract sign data: Create() failed: %w", err)
+			}
+			defer outFile.Close()
+			if _, err := io.Copy(outFile, tarReader); err != nil {
+				return fmt.Errorf("extract sign data: Copy() failed: %w", err)
+			}
+		}
+	}
+	return nil
 }
