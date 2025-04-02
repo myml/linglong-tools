@@ -27,14 +27,14 @@ func initExtractCmd() *cobra.Command {
 	extractCmd := cobra.Command{
 		Use:   "extract",
 		Short: "Extract erofs img of linglong layer file or bundle of linglong uab file",
-		Example: `  # Extract uab file to an empty directory
+		Example: `  # Extract erofs to an empty directory
   linglong-tools extract -f ./test.uab -d /path/to/dir
-  # Use shell pipe redirect
-  linglong-tools extract -f ./test.layer > app.img
-  # Use output args
+  linglong-tools extract -f ./test.layer -d /path/to/dir
+  # output erofs image
+  linglong-tools extract -f ./test.uab -o app.img
   linglong-tools extract -f ./test.layer -o app.img
-  # Mount erofs img to /mnt/test
-  erofsfuse app.img /mnt/test`,
+  # Mount erofs img to /tmp/test
+  erofsfuse app.img /tmp/test`,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := extractRun(extractArgs)
 			if err != nil {
@@ -44,7 +44,7 @@ func initExtractCmd() *cobra.Command {
 	}
 
 	extractCmd.Flags().StringVarP(&extractArgs.File, "file", "f", "", "layer file")
-	extractCmd.Flags().StringVarP(&extractArgs.OutputFile, "output", "o", "/dev/stdout", "output file")
+	extractCmd.Flags().StringVarP(&extractArgs.OutputFile, "output", "o", "", "output file")
 	extractCmd.Flags().StringVarP(&extractArgs.OutputDir, "dir", "d", "", "output directory")
 	err := extractCmd.MarkFlagRequired("file")
 	if err != nil {
@@ -57,16 +57,31 @@ func initExtractCmd() *cobra.Command {
 func extractRun(args ExtractArgs) error {
 	switch ext := filepath.Ext(args.File); ext {
 	case ".layer":
-		return extractLayer(args.File, args.OutputFile)
+		return extractLayer(args)
 	case ".uab":
-		return extractUab(args.File, args.OutputDir)
+		return extractUab(args)
 	default:
 		return fmt.Errorf("file type %s is unsupported", args.File)
 	}
 }
 
-func extractUab(inputFile string, outputDir string) error {
-	_, err := exec.LookPath("fsck.erofs")
+func extractUab(args ExtractArgs) error {
+	uabFile, err := uab.Open(args.File)
+	if err != nil {
+		return fmt.Errorf("open uab file: %w", err)
+	}
+	defer uabFile.Close()
+	// 保存erofs镜像文件
+	if len(args.OutputFile) > 0 {
+		err = uabFile.SaveErofs(args.OutputFile)
+		if err != nil {
+			return fmt.Errorf("save uab file to erofs: %w", err)
+		}
+		return nil
+	}
+	// 将erofs镜像解压到目录
+	outputDir := args.OutputDir
+	_, err = exec.LookPath("fsck.erofs")
 	if err != nil {
 		return errors.New("fsck.erofs not found")
 	}
@@ -94,12 +109,6 @@ func extractUab(inputFile string, outputDir string) error {
 		return fmt.Errorf("output directory %s isn't empty", outputDir)
 	}
 
-	uabFile, err := uab.Open(inputFile)
-	if err != nil {
-		return fmt.Errorf("open uab file: %w", err)
-	}
-	defer uabFile.Close()
-
 	err = uabFile.Extract(outputDir)
 	if err != nil {
 		return fmt.Errorf("extract uab file: %w", err)
@@ -107,8 +116,8 @@ func extractUab(inputFile string, outputDir string) error {
 	return nil
 }
 
-func extractLayer(inputFile string, outputFile string) error {
-	f, err := os.Open(inputFile)
+func extractLayer(args ExtractArgs) error {
+	f, err := os.Open(args.File)
 	if err != nil {
 		return fmt.Errorf("open layer file: %w", err)
 	}
@@ -118,20 +127,27 @@ func extractLayer(inputFile string, outputFile string) error {
 	if err != nil {
 		return fmt.Errorf("parse info: %w", err)
 	}
-	var out io.Writer
-	if outputFile == "/dev/stdout" {
-		out = os.Stdout
-	} else {
-		outFile, err := os.Create(outputFile)
+	// 保存erofs镜像文件
+	if len(args.OutputFile) > 0 {
+		outFile, err := os.Create(args.OutputFile)
 		if err != nil {
 			return fmt.Errorf("create output: %w", err)
 		}
 		defer outFile.Close()
-		out = outFile
+		_, err = io.Copy(outFile, f)
+		if err != nil {
+			return fmt.Errorf("copy content: %w", err)
+		}
+		return nil
 	}
-	_, err = io.Copy(out, f)
+	offset, err := f.Seek(0, 1)
 	if err != nil {
-		return fmt.Errorf("copy content: %w", err)
+		return fmt.Errorf("seek file: %w", err)
+	}
+	log.Println("offset", offset)
+	err = layer.Extract(args.File, offset, args.OutputDir)
+	if err != nil {
+		return fmt.Errorf("extract erofs: %w", err)
 	}
 	return nil
 }

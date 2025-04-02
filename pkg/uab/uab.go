@@ -82,6 +82,7 @@ func (u *UAB) MetaInfo() types.UABFileMetaInfo {
 	return u.metadata
 }
 
+// Extract 解压应用数据到指定目录，同时会解压签名文件
 func (u *UAB) Extract(outputDir string) error {
 	meta := u.MetaInfo()
 	bundleSectionName, exist := meta.Sections["bundle"]
@@ -258,6 +259,7 @@ func (u *UAB) insertSection(tarPath string, update bool) error {
 	return nil
 }
 
+// InsertSign 插入签名到uab文件中
 func (u *UAB) InsertSign(dataDir string, update bool) error {
 	signSection := u.elf.Section("linglong.bundle.sign")
 	if signSection != nil && !update {
@@ -273,12 +275,14 @@ func (u *UAB) InsertSign(dataDir string, update bool) error {
 	return u.insertSection(tarPath, update)
 }
 
+// HasSign 返回uab是否包含签名
 func (u *UAB) HasSign() bool {
 	bundleSectionName := "linglong.bundle.sign"
 	bundleSign := u.elf.Section(bundleSectionName)
 	return bundleSign != nil
 }
 
+// AppLayerPath 返回应用层的路径
 func (u *UAB) AppLayerPath() (string, error) {
 	meta := u.MetaInfo()
 	layers := meta.Layers
@@ -291,6 +295,7 @@ func (u *UAB) AppLayerPath() (string, error) {
 	return "", fmt.Errorf("couldn't find app layer in layers")
 }
 
+// ExtractSign 解压签名数据到指定目录
 func (u *UAB) ExtractSign(outputDir string) error {
 	bundleSectionName := "linglong.bundle.sign"
 	bundleSign := u.elf.Section(bundleSectionName)
@@ -323,6 +328,30 @@ func (u *UAB) ExtractSign(outputDir string) error {
 				return fmt.Errorf("extract sign data: Copy() failed: %w", err)
 			}
 		}
+	}
+	return nil
+}
+
+func (u *UAB) SaveErofs(outputFile string) error {
+	meta := u.MetaInfo()
+	bundleSectionName, exist := meta.Sections["bundle"]
+	if !exist {
+		return errors.New("couldn't find bundle section name")
+	}
+	// 解压应用数据
+	bundle := u.elf.Section(bundleSectionName)
+	if bundle == nil {
+		return fmt.Errorf("couldn't find section %s in %s", bundleSectionName, u.path)
+	}
+	f, err := os.Open(outputFile)
+	if err != nil {
+		return fmt.Errorf("open output file: %w", err)
+	}
+	defer f.Close()
+	r := bundle.Open()
+	_, err = io.Copy(f, r)
+	if err != nil {
+		return fmt.Errorf("write to output file: %w", err)
 	}
 	return nil
 }
