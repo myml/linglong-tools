@@ -8,8 +8,10 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
+	"github.com/myml/linglong-tools/pkg/tarutils"
 	"github.com/myml/linglong-tools/pkg/types"
 )
 
@@ -50,11 +52,57 @@ func ParseMetaInfo(r io.Reader) (*types.LayerFileMetaInfo, error) {
 	return &info, nil
 }
 
-func Extract(filepath string, offset int64, outputDir string) error {
+type Layer struct {
+	filepath    string
+	meta        *types.LayerFileMetaInfo
+	erofsOffset int64
+	erofsSize   int64
+	signOffset  int64
+}
+
+func NewLayer(filepath string) (*Layer, error) {
+	f, err := os.Open(filepath)
+	if err != nil {
+		return nil, fmt.Errorf("open layer file: %w", err)
+	}
+	defer f.Close()
+	var layerFile Layer
+	layerFile.filepath = filepath
+	// 读取信息
+	layerFile.meta, err = ParseMetaInfo(f)
+	if err != nil {
+		return nil, fmt.Errorf("parse info: %w", err)
+	}
+	// 获取erofs偏移
+	layerFile.erofsOffset, err = f.Seek(0, 1)
+	if err != nil {
+		return nil, fmt.Errorf("seek file: %w", err)
+	}
+	// 计算erofs大小
+	if layerFile.meta.ErofsSize == 0 {
+		finfo, err := f.Stat()
+		if err != nil {
+			return nil, fmt.Errorf("stat file: %w", err)
+		}
+		layerFile.signOffset = 0
+		layerFile.erofsSize = finfo.Size() - layerFile.erofsOffset
+	} else {
+		layerFile.erofsSize = layerFile.meta.ErofsSize
+		layerFile.signOffset = layerFile.erofsOffset + layerFile.meta.ErofsSize
+	}
+
+	return &layerFile, nil
+}
+
+func (l *Layer) HasSign() bool {
+	return l.signOffset > 0
+}
+
+func (l *Layer) Extract(outputDir string) error {
 	cmd := exec.Command("fsck.erofs",
-		fmt.Sprintf("--offset=%d", offset),
+		fmt.Sprintf("--offset=%d", l.erofsOffset),
 		fmt.Sprintf("--extract=%s", outputDir),
-		filepath,
+		l.filepath,
 	)
 	if os.Getenv("LINGLONG_UAB_DEBUG") != "" {
 		cmd.Stderr = os.Stderr
@@ -68,6 +116,51 @@ func Extract(filepath string, offset int64, outputDir string) error {
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("fsck erofs failed: %w, %s", err, out)
+	}
+	if l.HasSign() {
+		err = l.ExtractSign(filepath.Join(outputDir, "entries/share/deepin-elf-verify/.elfsign"))
+		if err != nil {
+			return fmt.Errorf("extract sign data failed: %w", err)
+		}
+	}
+	return nil
+}
+
+func (l *Layer) ExtractSign(outputDir string) error {
+	f, err := os.Open(l.filepath)
+	if err != nil {
+		return fmt.Errorf("open layer file: %w", err)
+	}
+	defer f.Close()
+	_, err = f.Seek(l.signOffset, 0)
+	if err != nil {
+		return fmt.Errorf("seek sign data: %w", err)
+	}
+	err = tarutils.ExtractTar(f, outputDir)
+	if err != nil {
+		return fmt.Errorf("extract sign data: %w", err)
+	}
+	return nil
+}
+
+func (l *Layer) SaveErofs(outputFile string) error {
+	f, err := os.Open(l.filepath)
+	if err != nil {
+		return fmt.Errorf("open layer file: %w", err)
+	}
+	defer f.Close()
+	_, err = f.Seek(l.erofsOffset, 0)
+	if err != nil {
+		return fmt.Errorf("seek sign data: %w", err)
+	}
+	outFile, err := os.Create(outputFile)
+	if err != nil {
+		return fmt.Errorf("create output file: %w", err)
+	}
+	defer outFile.Close()
+	_, err = io.Copy(outFile, f)
+	if err != nil {
+		return fmt.Errorf("copy erofs data to output file: %w", err)
 	}
 	return nil
 }

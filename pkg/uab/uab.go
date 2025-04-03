@@ -7,13 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
-	"os/user"
 	"path/filepath"
-	"strconv"
 
+	"github.com/myml/linglong-tools/pkg/tarutils"
 	"github.com/myml/linglong-tools/pkg/types"
 )
 
@@ -135,113 +133,6 @@ func (u *UAB) Extract(outputDir string) error {
 	return nil
 }
 
-func appendFileToTar(root string, file string, tw *tar.Writer) error {
-	info, err := os.Stat(file)
-	if err != nil {
-		return fmt.Errorf("stat failed: %w", err)
-	}
-
-	group, err := user.Current()
-	if err != nil {
-		return fmt.Errorf("get current user failed: %w", err)
-	}
-
-	gid, err := strconv.Atoi(group.Gid)
-	if err != nil {
-		return fmt.Errorf("get group id failed: %w", err)
-	}
-
-	uid, err := strconv.Atoi(group.Uid)
-	if err != nil {
-		return fmt.Errorf("get user id failed: %w", err)
-	}
-
-	relPath, err := filepath.Rel(root, file)
-	if err != nil {
-		return fmt.Errorf("get relative path failed: %w", err)
-	}
-
-	parent := filepath.Dir(relPath)
-	name := info.Name()
-	targetPath := filepath.Join(parent, name[0:2], name[2:])
-
-	hdr := &tar.Header{
-		Name:     targetPath,
-		Mode:     int64(info.Mode()),
-		Size:     info.Size(),
-		Gid:      gid,
-		Uid:      uid,
-		Uname:    group.Username,
-		Gname:    group.Username,
-		ModTime:  info.ModTime(),
-		Format:   tar.FormatPAX,
-		Typeflag: tar.TypeReg,
-	}
-
-	err = tw.WriteHeader(hdr)
-	if err != nil {
-		return fmt.Errorf("write header failed: %w", err)
-	}
-
-	input, err := os.Open(file)
-	if err != nil {
-		return fmt.Errorf("open failed: %w", err)
-	}
-	defer input.Close()
-
-	buf := make([]byte, 4096)
-	for {
-		bytes, err := input.Read(buf)
-		if err != nil {
-			if err.Error() != "EOF" {
-				return fmt.Errorf("read failed: %w", err)
-			}
-			break
-		}
-
-		_, err = tw.Write(buf[:bytes])
-		if err != nil {
-			return fmt.Errorf("write to tar failed: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func createTar(dir string) (string, error) {
-	tarPath := filepath.Join(dir, "sign.tar")
-	out, err := os.Create(tarPath)
-	if err != nil {
-		return "", fmt.Errorf("create tar file: %w", err)
-	}
-	defer out.Close()
-
-	tw := tar.NewWriter(out)
-	defer func() {
-		if err := tw.Close(); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if !info.IsDir() && info.Name() != "sign.tar" {
-			return appendFileToTar(dir, path, tw)
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return "", fmt.Errorf("walk directory: %w", err)
-	}
-
-	return tarPath, nil
-}
-
 func (u *UAB) insertSection(tarPath string, update bool) error {
 	op := "--add-section"
 	if update {
@@ -266,13 +157,18 @@ func (u *UAB) InsertSign(dataDir string, update bool) error {
 		return errors.New("sign section already exists, you could update it")
 	}
 
-	tarPath, err := createTar(dataDir)
+	signFile := filepath.Join(os.TempDir(), "sign.tar")
+	defer os.Remove(signFile)
+	f, err := os.Open(signFile)
+	if err != nil {
+		return fmt.Errorf("open sign file error: %w", err)
+	}
+	err = tarutils.CreateTar(f, dataDir)
 	if err != nil {
 		return fmt.Errorf("create tar file error: %w", err)
 	}
-	defer os.Remove(tarPath)
 
-	return u.insertSection(tarPath, update)
+	return u.insertSection(signFile, update)
 }
 
 // HasSign 返回uab是否包含签名
