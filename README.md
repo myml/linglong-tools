@@ -10,15 +10,15 @@
 2. 以下所有命令的参数可使用简化名或正式名，简化名以`-`开头，正式名以`--`开头，两者作用相同
 3. 以下所有命令都可使用 -h 或 --help 打印命令的帮助
 
-### 提取玲珑 layer 文件信息
+### 查看玲珑 layer/uab 文件信息
 
-linglong-tools info 命令用于获取 linglong Layer 文件的信息。
+linglong-tools info 命令用于获取 layer/uab 文件的信息。
 
 示例
 
 ```bash
 # 输出 JSON 格式的详细信息
-linglong-tools info -f ./test.layer -p
+linglong-tools info -f ./test.uab -p
 
 # 使用自定义模板输出详细信息中的 Appid
 linglong-tools info -f ./test.layer --format '{{ .Info.Appid }}'
@@ -34,9 +34,9 @@ linglong-tools info -f ./test.layer --format '{{ index .Info.Arch 0 }}'
     -h, --help：获取命令帮助信息。
     -p, --prettier：以漂亮的 JSON 格式输出。
 
-### 推送玲珑 layer 文件
+### 推送玲珑 layer/uab 文件
 
-linglong-tools push 命令用于将 Linglong Layer 文件推送到远程仓库。
+linglong-tools push 命令用于将 layer/uab 文件推送到远程仓库。
 
 示例
 
@@ -113,13 +113,18 @@ linglong-tools delete -r https://repo.linglong.dev -i org.deepin.home -c main -v
 
 ### 提取文件
 
-可使用 linglong-tools extract 命令从 layer 中提取 erofs 镜像文件。
+可使用 linglong-tools extract 命令从 layer/uab 中提取 erofs 镜像文件。
 
 ```bash
-# 默认输出到stdout, 可使用管道重定向
-linglong-tools extract -f ./test.layer > app.img
 # 可使用output参数指定输出的文件路径
 linglong-tools extract -f ./test.layer -o app.img
 # 使用erofsfuse可挂载导出的erofs镜像文件
 erofsfuse app.img /mnt/test`
+```
+
+extract 也可以直接将 erofs 镜像内的文件解压到目录
+
+```bash
+linglong-tools extract -f ./test.uab -d /path/to/dir
+linglong-tools extract -f ./test.layer -d /path/to/dir
 ```
