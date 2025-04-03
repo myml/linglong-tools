@@ -3,8 +3,8 @@ package types
 type LayerFileMetaInfo struct {
 	Info      LayerInfo `json:"info"`
 	Version   string    `json:"version"`
-	ErofsSize int64     `json:"erofs_size"`
-	SignSize  int64     `json:"sign_size"`
+	ErofsSize int64     `json:"erofs_size,omitempty"`
+	SignSize  int64     `json:"sign_size,omitempty"`
 
 	Head string `json:"head,omitempty"`
 	Raw  string `json:"raw,omitempty"`

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -157,18 +158,23 @@ func (u *UAB) InsertSign(dataDir string, update bool) error {
 		return errors.New("sign section already exists, you could update it")
 	}
 
-	signFile := filepath.Join(os.TempDir(), "sign.tar")
-	defer os.Remove(signFile)
-	f, err := os.Open(signFile)
+	signFile, err := ioutil.TempFile("", "0600")
 	if err != nil {
-		return fmt.Errorf("open sign file error: %w", err)
+		return fmt.Errorf("create sign file failed: %w", err)
 	}
-	err = tarutils.CreateTar(f, dataDir)
+	defer func() {
+		signFile.Close()
+		os.Remove(signFile.Name())
+	}()
+	err = tarutils.CreateTar(signFile, dataDir)
 	if err != nil {
 		return fmt.Errorf("create tar file error: %w", err)
 	}
-
-	return u.insertSection(signFile, update)
+	err = signFile.Close()
+	if err != nil {
+		return fmt.Errorf("close sign file error: %w", err)
+	}
+	return u.insertSection(signFile.Name(), update)
 }
 
 // HasSign 返回uab是否包含签名
@@ -179,16 +185,24 @@ func (u *UAB) HasSign() bool {
 }
 
 // AppLayerPath 返回应用层的路径
-func (u *UAB) AppLayerPath() (string, error) {
+func (u *UAB) AppInfo() (types.LayerInfo, error) {
 	meta := u.MetaInfo()
 	layers := meta.Layers
 	for i := range layers {
 		if layers[i].Info.Kind == "app" {
-			info := layers[i].Info
-			return filepath.Join("layers", info.ID, info.Module), nil
+			return layers[i].Info, nil
 		}
 	}
-	return "", fmt.Errorf("couldn't find app layer in layers")
+	return types.LayerInfo{}, fmt.Errorf("couldn't find app layer in layers")
+}
+
+// AppLayerPath 返回应用层的路径
+func (u *UAB) AppLayerPath() (string, error) {
+	info, err := u.AppInfo()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join("layers", info.ID, info.Module), nil
 }
 
 // ExtractSign 解压签名数据到指定目录

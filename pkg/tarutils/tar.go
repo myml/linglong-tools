@@ -2,11 +2,13 @@ package tarutils
 
 import (
 	"archive/tar"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -19,6 +21,11 @@ func appendFileToTar(root, file string, tw *tar.Writer) error {
 	if err != nil {
 		return fmt.Errorf("create tar header failed: %w", err)
 	}
+	hdr.Name, err = filepath.Rel(root, file)
+	if err != nil {
+		return fmt.Errorf("rel path failed: %w", err)
+	}
+	hdr.Name = "./" + hdr.Name
 	err = tw.WriteHeader(hdr)
 	if err != nil {
 		return fmt.Errorf("write header failed: %w", err)
@@ -31,26 +38,14 @@ func appendFileToTar(root, file string, tw *tar.Writer) error {
 		return fmt.Errorf("open failed: %w", err)
 	}
 	defer input.Close()
-
-	buf := make([]byte, 4096)
-	for {
-		bytes, err := input.Read(buf)
-		if err != nil {
-			if err.Error() != "EOF" {
-				return fmt.Errorf("read failed: %w", err)
-			}
-			break
-		}
-
-		_, err = tw.Write(buf[:bytes])
-		if err != nil {
-			return fmt.Errorf("write to tar failed: %w", err)
-		}
+	_, err = io.Copy(tw, input)
+	if err != nil {
+		return fmt.Errorf("copy failed: %w", err)
 	}
-
 	return nil
 }
 
+// 创建简单tar，用于打包签名
 func CreateTar(w io.Writer, dir string) error {
 	tw := tar.NewWriter(w)
 	defer func() {
@@ -62,6 +57,9 @@ func CreateTar(w io.Writer, dir string) error {
 		if err != nil {
 			return err
 		}
+		if dir == path {
+			return nil
+		}
 		return appendFileToTar(dir, path, tw)
 	})
 
@@ -71,6 +69,7 @@ func CreateTar(w io.Writer, dir string) error {
 	return nil
 }
 
+// 解压简单tar，用于解压签名
 func ExtractTar(r io.Reader, outputDir string) error {
 	tarReader := tar.NewReader(r)
 	for {
@@ -99,4 +98,21 @@ func ExtractTar(r io.Reader, outputDir string) error {
 		}
 	}
 	return nil
+}
+
+// 使用tar命令行创建标准的tar.gz文件，支持硬链接、软链接等情况
+func CreateTarStream(dir string) (io.ReadCloser, error) {
+	r, w := io.Pipe()
+	var stderrBuff bytes.Buffer
+	cmd := exec.Command("tar", "-czvf", "-", "-C", dir, ".")
+	cmd.Stdout = w
+	cmd.Stderr = &stderrBuff
+	go func() {
+		err := cmd.Run()
+		if err != nil {
+			r.CloseWithError(fmt.Errorf("CreateTarCommand: tar command failed: %w\n%s", err, stderrBuff.String()))
+		}
+		w.Close()
+	}()
+	return r, nil
 }

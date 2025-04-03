@@ -11,16 +11,19 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
-	"strings"
+	"path/filepath"
 	"time"
 
 	"github.com/myml/linglong-tools/pkg/apiserver"
 	"github.com/myml/linglong-tools/pkg/layer"
+	"github.com/myml/linglong-tools/pkg/tarutils"
 	"github.com/myml/linglong-tools/pkg/types"
+	"github.com/myml/linglong-tools/pkg/uab"
 	"github.com/spf13/cobra"
 )
 
@@ -75,49 +78,13 @@ type PushArgs struct {
 	PrintStatus bool
 }
 
-func pushTgz(ctx context.Context, args PushArgs) error {
-	var info types.LayerInfo
-	{
-		f, err := os.Open(args.File)
-		if err != nil {
-			return fmt.Errorf("open tgz file: %w", err)
-		}
-		defer f.Close()
-		r, err := gzip.NewReader(f)
-		if err != nil {
-			return fmt.Errorf("gzip: file format error: %w", err)
-		}
-		defer r.Close()
-		tarReader := tar.NewReader(r)
-		for {
-			header, err := tarReader.Next()
-			if err != nil {
-				return fmt.Errorf("tar: file format error: %w", err)
-			}
-			if header.Name == "./info.json" {
-				err = json.NewDecoder(tarReader).Decode(&info)
-				if err != nil {
-					return fmt.Errorf("parse info.json: %w", err)
-				}
-				if len(info.ID) > 0 {
-					info.Appid = info.ID
-				}
-				break
-			}
-		}
-	}
+// 推送tar流数据
+func pushTarStream(ctx context.Context, args PushArgs, input io.Reader, ref string) error {
 	log.Println(UploadTaskStatusLogining)
 	api, token, err := initAPIClient(args.RepoUrl, true)
 	if err != nil {
 		return fmt.Errorf("init api: %w", err)
 	}
-	ref := fmt.Sprintf("%v/%v/%v/%v/%v",
-		args.RepoChannel,
-		info.Appid,
-		info.Version,
-		info.Arch[0],
-		info.Module,
-	)
 	log.Println(UploadTaskStatusCreating)
 	taskReq := apiserver.SchemaNewUploadTaskReq{RepoName: &args.RepoName, Ref: &ref}
 	newTaskResp, _, err := api.NewUploadTaskID(ctx).Req(taskReq).XToken(*token).Execute()
@@ -130,21 +97,17 @@ func pushTgz(ctx context.Context, args PushArgs) error {
 	log.Println(UploadTaskStatusUploading)
 	// openapi生成的上传文件代码需要将整个文件读取到内存，不适合大文件上传
 	{
-		f, err := os.Open(args.File)
-		if err != nil {
-			return fmt.Errorf("open tgz file: %w", err)
-		}
 		r, w := io.Pipe()
 		m := multipart.NewWriter(w)
 		contentType := m.FormDataContentType()
 		go func() {
 			defer w.Close()
-			part, err := m.CreateFormFile("file", f.Name())
+			part, err := m.CreateFormFile("file", "file.tgz")
 			if err != nil {
 				w.CloseWithError(err)
 				return
 			}
-			if _, err = io.Copy(part, f); err != nil {
+			if _, err = io.Copy(part, input); err != nil {
 				w.CloseWithError(err)
 				return
 			}
@@ -194,7 +157,107 @@ func pushTgz(ctx context.Context, args PushArgs) error {
 	}
 }
 
+// 推送layer目录
+func pushDirectory(ctx context.Context, args PushArgs, directory string) error {
+	data, err := os.ReadFile(filepath.Join(directory, "info.json"))
+	if err != nil {
+		return fmt.Errorf("read info.json: %w", err)
+	}
+	var info types.LayerInfo
+	err = json.Unmarshal(data, &info)
+	if err != nil {
+		return fmt.Errorf("unmarshal info.json: %w", err)
+	}
+	if info.ID == "" {
+		info.ID = info.Appid
+	}
+	if info.Appid == "" {
+		info.Appid = info.ID
+	}
+	ref := fmt.Sprintf("%v/%v/%v/%v/%v",
+		args.RepoChannel,
+		info.ID,
+		info.Version,
+		info.Arch[0],
+		info.Module,
+	)
+	r, err := tarutils.CreateTarStream(directory)
+	if err != nil {
+		return fmt.Errorf("create tar stream: %w", err)
+	}
+	return pushTarStream(ctx, args, r, ref)
+}
+
+// 推送tgz文件
+func pushTgz(ctx context.Context, args PushArgs) error {
+	var info types.LayerInfo
+	f, err := os.Open(args.File)
+	if err != nil {
+		return fmt.Errorf("open tgz file: %w", err)
+	}
+	defer f.Close()
+	r, err := gzip.NewReader(f)
+	if err != nil {
+		return fmt.Errorf("gzip: file format error: %w", err)
+	}
+	defer r.Close()
+	tarReader := tar.NewReader(r)
+	for {
+		header, err := tarReader.Next()
+		if err != nil {
+			return fmt.Errorf("tar: file format error: %w", err)
+		}
+		if header.Name == "./info.json" {
+			err = json.NewDecoder(tarReader).Decode(&info)
+			if err != nil {
+				return fmt.Errorf("parse info.json: %w", err)
+			}
+			if len(info.ID) > 0 {
+				info.Appid = info.ID
+			}
+			break
+		}
+	}
+	ref := fmt.Sprintf("%v/%v/%v/%v/%v",
+		args.RepoChannel,
+		info.Appid,
+		info.Version,
+		info.Arch[0],
+		info.Module,
+	)
+	_, err = f.Seek(0, 0)
+	if err != nil {
+		return fmt.Errorf("file seek: %w", err)
+	}
+	return pushTarStream(ctx, args, f, ref)
+}
+
+// 推送layer文件
 func pushLayer(ctx context.Context, args PushArgs) error {
+	l, err := layer.NewLayer(args.File)
+	if err != nil {
+		return fmt.Errorf("")
+	}
+	defer l.Close()
+	// 签名文件需要将签名数据一起推送，所以先在本地解压
+	if l.HasSign() {
+		tmpDir, err := ioutil.TempDir("", "extract-layer-*")
+		if err != nil {
+			return fmt.Errorf("create temp dir: %w", err)
+		}
+		defer os.RemoveAll(tmpDir)
+		log.Println(UploadTaskStatusChecking)
+		err = l.Extract(tmpDir)
+		if err != nil {
+			return fmt.Errorf("extract layer file: %w", err)
+		}
+		err = pushDirectory(ctx, args, tmpDir)
+		if err != nil {
+			return fmt.Errorf("push extracted files: %w", err)
+		}
+		return nil
+	}
+
 	f, err := os.Open(args.File)
 	if err != nil {
 		return fmt.Errorf("open layer file: %w", err)
@@ -298,11 +361,45 @@ func pushLayer(ctx context.Context, args PushArgs) error {
 	}
 }
 
-func PushRun(ctx context.Context, args PushArgs) error {
-	if strings.HasSuffix(args.File, ".tgz") {
-		return pushTgz(ctx, args)
+// 推送uab文件
+func pushUab(ctx context.Context, args PushArgs) error {
+	u, err := uab.Open(args.File)
+	if err != nil {
+		return fmt.Errorf("open uab file: %w", err)
 	}
-	return pushLayer(ctx, args)
+	defer u.Close()
+	appLayerPath, err := u.AppLayerPath()
+	if err != nil {
+		return fmt.Errorf("get app layer path: %w", err)
+	}
+	tmpDir, err := ioutil.TempDir("", "extract-uab-*")
+	if err != nil {
+		return fmt.Errorf("create temp dir: %w", err)
+	}
+	defer os.RemoveAll(tmpDir)
+	log.Println(UploadTaskStatusChecking)
+	err = u.Extract(tmpDir)
+	if err != nil {
+		return fmt.Errorf("extract uab file: %w", err)
+	}
+	err = pushDirectory(ctx, args, filepath.Join(tmpDir, appLayerPath))
+	if err != nil {
+		return fmt.Errorf("push extracted files: %w", err)
+	}
+	return nil
+}
+
+func PushRun(ctx context.Context, args PushArgs) error {
+	switch ext := filepath.Ext(args.File); ext {
+	case ".layer":
+		return pushLayer(ctx, args)
+	case ".tgz":
+		return pushTgz(ctx, args)
+	case ".uab":
+		return pushUab(ctx, args)
+	default:
+		return fmt.Errorf("file type %s is unsupported", args.File)
+	}
 }
 
 func printStatus() {
@@ -310,6 +407,7 @@ func printStatus() {
 		status UploadTaskStatus
 		desc   string
 	}{
+		{UploadTaskStatusChecking, "正在检查"},
 		{UploadTaskStatusLogining, "正在登录"},
 		{UploadTaskStatusCreating, "正在创建上传任务"},
 		{UploadTaskStatusPending, "正在等待上传"},
@@ -329,6 +427,7 @@ type UploadTaskStatus string
 
 var (
 	/*** client status ***/
+	UploadTaskStatusChecking  UploadTaskStatus = "checking"
 	UploadTaskStatusLogining  UploadTaskStatus = "logining"
 	UploadTaskStatusCreating  UploadTaskStatus = "creating"
 	UploadTaskStatusUploading UploadTaskStatus = "uploading"

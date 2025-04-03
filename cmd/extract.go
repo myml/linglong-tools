@@ -59,6 +59,7 @@ func extractRun(args ExtractArgs) error {
 		if err != nil {
 			return fmt.Errorf("create layer from file failed: %w", err)
 		}
+		defer layerFile.Close()
 		return extract(args, layerFile)
 	case ".uab":
 		uabFile, err := uab.Open(args.File)

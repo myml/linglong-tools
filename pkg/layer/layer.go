@@ -94,6 +94,11 @@ func NewLayer(filepath string) (*Layer, error) {
 	return &layerFile, nil
 }
 
+// 为了和uab保持一致，以及后续可能的变动
+func (l *Layer) Close() error {
+	return nil
+}
+
 func (l *Layer) HasSign() bool {
 	return l.signOffset > 0
 }
