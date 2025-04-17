@@ -95,9 +95,15 @@ func extract(args ExtractArgs, extracter Extracter) error {
 	if err != nil {
 		return errors.New("fsck.erofs not found")
 	}
-	_, err = os.Stat(args.OutputDir)
-	if err == nil {
-		return fmt.Errorf("output destination is already exist")
+	entry, err := os.ReadDir(args.OutputDir)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("check output dir: %w", err)
+		}
+	} else {
+		if len(entry) > 0 {
+			return fmt.Errorf("output should be an empty directory")
+		}
 	}
 	err = extracter.Extract(args.OutputDir)
 	if err != nil {
