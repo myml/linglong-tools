@@ -184,6 +184,15 @@ func (u *UAB) HasSign() bool {
 	return bundleSign != nil
 }
 
+func (u *UAB) SignSize() uint64 {
+	bundleSectionName := "linglong.bundle.sign"
+	bundleSign := u.elf.Section(bundleSectionName)
+	if bundleSign == nil {
+		return 0
+	}
+	return bundleSign.Size
+}
+
 // AppLayerPath 返回应用层的路径
 func (u *UAB) AppInfo() (types.LayerInfo, error) {
 	meta := u.MetaInfo()

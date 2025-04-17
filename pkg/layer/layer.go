@@ -56,7 +56,7 @@ type Layer struct {
 	filepath    string
 	meta        *types.LayerFileMetaInfo
 	erofsOffset int64
-	erofsSize   int64
+	erofsSize   uint64
 	signOffset  int64
 }
 
@@ -85,10 +85,10 @@ func NewLayer(filepath string) (*Layer, error) {
 			return nil, fmt.Errorf("stat file: %w", err)
 		}
 		layerFile.signOffset = 0
-		layerFile.erofsSize = finfo.Size() - layerFile.erofsOffset
+		layerFile.erofsSize = uint64(finfo.Size() - layerFile.erofsOffset)
 	} else {
 		layerFile.erofsSize = layerFile.meta.ErofsSize
-		layerFile.signOffset = layerFile.erofsOffset + layerFile.meta.ErofsSize
+		layerFile.signOffset = layerFile.erofsOffset + int64(layerFile.meta.ErofsSize)
 	}
 
 	return &layerFile, nil

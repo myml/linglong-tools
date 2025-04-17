@@ -108,8 +108,9 @@ func uabInfo(args InfoArgs) error {
 
 	meta := uab.MetaInfo()
 	var info struct {
-		Info *types.LayerInfo `json:"info"`
-		Raw  string           `json:"raw"`
+		Info     *types.LayerInfo `json:"info"`
+		SignSize uint64           `json:"sign_size,omitempty"`
+		Raw      string           `json:"raw"`
 	}
 	for i := range meta.Layers {
 		if meta.Layers[i].Info.Kind == "app" {
@@ -121,6 +122,9 @@ func uabInfo(args InfoArgs) error {
 			info.Raw = string(data)
 			break
 		}
+	}
+	if uab.HasSign() {
+		info.SignSize = uab.SignSize()
 	}
 	if info.Info == nil {
 		return fmt.Errorf("no app layer found in uab file")

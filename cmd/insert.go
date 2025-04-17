@@ -180,7 +180,7 @@ func insert2Layer(args InsertArgs) error {
 	if err != nil {
 		return fmt.Errorf("create tar file: %w", err)
 	}
-	info.SignSize = int64(signDataBuff.Len())
+	info.SignSize = uint64(signDataBuff.Len())
 	// 计算erofs大小
 	if info.ErofsSize == 0 {
 		offset, err := f.Seek(0, 1)
@@ -191,10 +191,15 @@ func insert2Layer(args InsertArgs) error {
 		if err != nil {
 			return fmt.Errorf("stat file: %w", err)
 		}
-		info.ErofsSize = finfo.Size() - offset
+		info.ErofsSize = uint64(finfo.Size() - offset)
 	}
+
 	// 创建签名后的layer文件
-	signed, err := os.Create("signed.layer")
+	outdir := filepath.Dir(args.OutputFile)
+	if len(args.OutputFile) == 0 {
+		outdir = filepath.Dir(args.InputFile)
+	}
+	signed, err := os.CreateTemp(outdir, "signed_*.layer")
 	if err != nil {
 		return fmt.Errorf("open signed layer file: %w", err)
 	}
@@ -224,7 +229,7 @@ func insert2Layer(args InsertArgs) error {
 		return fmt.Errorf("write meta to signed layer file: %w", err)
 	}
 	// 写入erofs内容
-	_, err = io.CopyN(signed, f, info.ErofsSize)
+	_, err = io.CopyN(signed, f, int64(info.ErofsSize))
 	if err != nil {
 		return fmt.Errorf("copy erofs content to signed layer file: %w", err)
 	}
