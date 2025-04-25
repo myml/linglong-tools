@@ -18,6 +18,7 @@ func Execute() {
 	rootCmd.AddCommand(initExtractCmd())
 	rootCmd.AddCommand(initInsertCmd())
 	rootCmd.AddCommand(initMetaCmd())
+	rootCmd.AddCommand(initCheckCmd())
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
