@@ -13,4 +13,5 @@ func TestCreateTar(t *testing.T) {
 	assert.NoError(err)
 	err = CreateTar(f, "../../tools")
 	assert.NoError(err)
+	os.Remove("1.tar")
 }
