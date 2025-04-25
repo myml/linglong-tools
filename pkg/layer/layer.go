@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
+	"github.com/myml/linglong-tools/pkg/erofs"
 	"github.com/myml/linglong-tools/pkg/tarutils"
 	"github.com/myml/linglong-tools/pkg/types"
 )
@@ -104,23 +104,13 @@ func (l *Layer) HasSign() bool {
 }
 
 func (l *Layer) Extract(outputDir string) error {
-	cmd := exec.Command("fsck.erofs",
-		fmt.Sprintf("--offset=%d", l.erofsOffset),
-		fmt.Sprintf("--extract=%s", outputDir),
-		l.filepath,
-	)
-	if os.Getenv("LINGLONG_UAB_DEBUG") != "" {
-		cmd.Stderr = os.Stderr
-		cmd.Stdout = os.Stdout
-		err := cmd.Run()
-		if err != nil {
-			return fmt.Errorf("fsck erofs failed: %w", err)
-		}
-		return nil
-	}
-	out, err := cmd.CombinedOutput()
+	fsck, err := erofs.NewErofsCmd()
 	if err != nil {
-		return fmt.Errorf("fsck erofs failed: %w, %s", err, out)
+		return fmt.Errorf("create fsck command failed: %w", err)
+	}
+	err = fsck.Extract(l.filepath, outputDir, l.erofsOffset, int64(l.erofsSize))
+	if err != nil {
+		return fmt.Errorf("extract erofs failed: %w", err)
 	}
 	if l.HasSign() {
 		err = l.ExtractSign(filepath.Join(outputDir, "entries/share/deepin-elf-verify/.elfsign"))

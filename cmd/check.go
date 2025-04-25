@@ -100,7 +100,7 @@ func checkRun(args CheckArgs) error {
 	if args.CheckSystemdService {
 		err = in.Extract(dir)
 		if err != nil {
-			return fmt.Errorf("")
+			return fmt.Errorf("extract file failed: %w", err)
 		}
 		cmd := exec.Command("bash")
 		cmd.Dir = dir

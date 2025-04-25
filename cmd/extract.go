@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/myml/linglong-tools/pkg/layer"
@@ -87,14 +86,11 @@ func extract(args ExtractArgs, extracter Extracter) error {
 		}
 		return nil
 	}
+	// 检查
 	if args.OutputDir == "" {
 		return errors.New("please specific an output directory")
 	}
 	// 将erofs镜像解压到目录
-	_, err := exec.LookPath("fsck.erofs")
-	if err != nil {
-		return errors.New("fsck.erofs not found")
-	}
 	entry, err := os.ReadDir(args.OutputDir)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {

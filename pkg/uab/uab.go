@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/myml/linglong-tools/pkg/erofs"
 	"github.com/myml/linglong-tools/pkg/tarutils"
 	"github.com/myml/linglong-tools/pkg/types"
 )
@@ -93,26 +94,14 @@ func (u *UAB) Extract(outputDir string) error {
 	if bundle == nil {
 		return fmt.Errorf("couldn't find section %s in %s", bundleSectionName, u.path)
 	}
-
-	cmd := exec.Command("fsck.erofs",
-		fmt.Sprintf("--offset=%d", bundle.Offset),
-		fmt.Sprintf("--extract=%s", outputDir),
-		u.path,
-	)
-	if os.Getenv("LINGLONG_UAB_DEBUG") != "" {
-		cmd.Stderr = os.Stderr
-		cmd.Stdout = os.Stdout
-		err := cmd.Run()
-		if err != nil {
-			return fmt.Errorf("fsck erofs failed: %w", err)
-		}
-		return nil
-	}
-	out, err := cmd.CombinedOutput()
+	fsck, err := erofs.NewErofsCmd()
 	if err != nil {
-		return fmt.Errorf("fsck erofs failed: %w, %s", err, out)
+		return fmt.Errorf("create fsck command failed: %w", err)
 	}
-
+	err = fsck.Extract(u.path, outputDir, int64(bundle.Offset), int64(bundle.Size))
+	if err != nil {
+		return fmt.Errorf("extract erofs failed: %w", err)
+	}
 	// 解压签名数据
 	if u.HasSign() {
 		appLayerPath, err := u.AppLayerPath()
