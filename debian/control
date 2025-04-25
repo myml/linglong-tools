@@ -1,0 +1,17 @@
+Source: linyaps-tools
+Section: admin
+Priority: optional
+Maintainer: Deepin Packages Builder <packages@deepin.com>
+Build-Depends:
+ debhelper (>= 11),
+ golang-go
+Standards-Version: 4.5.1
+Homepage: http://www.deepin.org
+
+Package: linyaps-tools
+Depends: ${misc:Depends},erofs-utils
+Architecture: any
+Priority: optional
+Description: a linyaps command line tools.
+ linyaps-tools is a command line tools, it provides linglong applications push and linglong uab compression and decompression.
+
