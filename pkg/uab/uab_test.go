@@ -167,7 +167,10 @@ func generateMinimalUAB(root string, bundle string) (string, error) {
 		return "", fmt.Errorf("Error opening bundle: %w", err)
 	}
 	defer bundleF.Close()
-
+	bundleFInfo, err := bundleF.Stat()
+	if err != nil {
+		return "", fmt.Errorf("stat bundle file: %w", err)
+	}
 	buf := make([]byte, 4096)
 	for {
 		bytes, err := bundleF.Read(buf)
@@ -210,16 +213,16 @@ func generateMinimalUAB(root string, bundle string) (string, error) {
 	sectionHeader := make([]byte, 192)
 	sectionNameOffset := 0
 	// linglong.bundle
-	binary.LittleEndian.PutUint32(sectionHeader[0:], uint32(sectionNameOffset)) // name
-	binary.LittleEndian.PutUint32(sectionHeader[4:], 1)                         // type
-	binary.LittleEndian.PutUint64(sectionHeader[8:], 0)                         // flag
-	binary.LittleEndian.PutUint64(sectionHeader[16:], 0)                        // addr
-	binary.LittleEndian.PutUint64(sectionHeader[24:], 64)                       // offset
-	binary.LittleEndian.PutUint64(sectionHeader[32:], 64)                       // size
-	binary.LittleEndian.PutUint32(sectionHeader[40:], 0)                        // link
-	binary.LittleEndian.PutUint32(sectionHeader[44:], 0)                        // info
-	binary.LittleEndian.PutUint64(sectionHeader[48:], 1)                        // addralign
-	binary.LittleEndian.PutUint64(sectionHeader[56:], 0)                        // entsize
+	binary.LittleEndian.PutUint32(sectionHeader[0:], uint32(sectionNameOffset))   // name
+	binary.LittleEndian.PutUint32(sectionHeader[4:], 1)                           // type
+	binary.LittleEndian.PutUint64(sectionHeader[8:], 0)                           // flag
+	binary.LittleEndian.PutUint64(sectionHeader[16:], 0)                          // addr
+	binary.LittleEndian.PutUint64(sectionHeader[24:], 64)                         // offset
+	binary.LittleEndian.PutUint64(sectionHeader[32:], uint64(bundleFInfo.Size())) // size
+	binary.LittleEndian.PutUint32(sectionHeader[40:], 0)                          // link
+	binary.LittleEndian.PutUint32(sectionHeader[44:], 0)                          // info
+	binary.LittleEndian.PutUint64(sectionHeader[48:], 1)                          // addralign
+	binary.LittleEndian.PutUint64(sectionHeader[56:], 0)                          // entsize
 
 	//linglong.meta
 	sectionNameOffset += len(bundleSection)

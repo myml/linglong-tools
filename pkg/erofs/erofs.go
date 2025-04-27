@@ -27,7 +27,6 @@ func NewErofsCmd() (*ErofsFsck, error) {
 	cmd := ErofsFsck{
 		SupportOffset: strings.Contains(string(out), "--offset="),
 	}
-	cmd.SupportOffset = false
 	return &cmd, nil
 }
 
