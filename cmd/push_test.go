@@ -56,10 +56,10 @@ func TestPushRun(t *testing.T) {
 		// nolint
 		json.NewEncoder(w).Encode(map[string]interface{}{"data": map[string]string{"status": string(UploadTaskStatusComplete)}})
 	})
-	server := http.Server{Addr: ":8080", Handler: http.DefaultServeMux}
+	server := http.Server{Addr: ":12312", Handler: http.DefaultServeMux}
 	go func() {
 		pushArgs.File = fname
-		pushArgs.RepoUrl = "http://test:pwd@127.0.0.1:8080"
+		pushArgs.RepoUrl = "http://test:pwd@127.0.0.1:12312"
 		// 测试推送
 		err := PushRun(context.Background(), pushArgs)
 		assert.NoError(err)
