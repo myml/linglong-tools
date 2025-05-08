@@ -242,6 +242,10 @@ func insert2Layer(args InsertArgs) error {
 	if err != nil {
 		return fmt.Errorf("close signed layer file: %w", err)
 	}
+	err = os.Chmod(signed.Name(), 0644)
+	if err != nil {
+		return fmt.Errorf("change mode of signed layer file: %w", err)
+	}
 	if len(args.OutputFile) > 0 {
 		err = os.Rename(signed.Name(), args.OutputFile)
 	} else {
