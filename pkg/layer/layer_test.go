@@ -81,7 +81,7 @@ func TestLayer(t *testing.T) {
 	workdir, err := os.MkdirTemp("", "test")
 	assert.NoError(err)
 	t.Log(workdir)
-	// defer os.RemoveAll(workdir)
+	defer os.RemoveAll(workdir)
 
 	f, err := os.Create(filepath.Join(workdir, "test.layer"))
 	assert.NoError(err)
