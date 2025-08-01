@@ -16,6 +16,9 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
 
+      - name: Install erofs
+        run: sudo apt-get install erofs-utils -y
+        
       - name: Install dependencies
         run: go mod download
 
