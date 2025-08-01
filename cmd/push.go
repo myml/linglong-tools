@@ -19,7 +19,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/myml/linglong-tools/pkg/apiserver"
+	"github.com/myml/linglong-tools/internal/apiserver"
 	"github.com/myml/linglong-tools/pkg/layer"
 	"github.com/myml/linglong-tools/pkg/tarutils"
 	"github.com/myml/linglong-tools/pkg/types"

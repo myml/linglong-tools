@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/binary"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -13,7 +10,6 @@ import (
 	"path/filepath"
 
 	"github.com/myml/linglong-tools/pkg/layer"
-	"github.com/myml/linglong-tools/pkg/tarutils"
 	"github.com/myml/linglong-tools/pkg/uab"
 	"github.com/spf13/cobra"
 )
@@ -159,100 +155,17 @@ func insert2UAB(args InsertArgs) error {
 }
 
 func insert2Layer(args InsertArgs) error {
-	// 打开文件
-	f, err := os.Open(args.InputFile)
-	if err != nil {
-		return fmt.Errorf("open layer file: %w", err)
-	}
-	defer f.Close()
-	// 读取信息
-	info, err := layer.ParseMetaInfo(f)
-	if err != nil {
-		return fmt.Errorf("parse info: %w", err)
-	}
-	err = preSignDiectory(args.SignDir)
+	err := preSignDiectory(args.SignDir)
 	if err != nil {
 		return fmt.Errorf("preSignDiectory failed: %w", err)
 	}
-	// 创建签名数据缓冲区
-	var signDataBuff bytes.Buffer
-	err = tarutils.CreateTar(&signDataBuff, args.SignDir)
+	layer, err := layer.NewLayer(args.InputFile)
 	if err != nil {
-		return fmt.Errorf("create tar file: %w", err)
+		return fmt.Errorf("open layer file: %w", err)
 	}
-	info.SignSize = uint64(signDataBuff.Len())
-	// 计算erofs大小
-	if info.ErofsSize == 0 {
-		offset, err := f.Seek(0, 1)
-		if err != nil {
-			return fmt.Errorf("seek file: %w", err)
-		}
-		finfo, err := f.Stat()
-		if err != nil {
-			return fmt.Errorf("stat file: %w", err)
-		}
-		info.ErofsSize = uint64(finfo.Size() - offset)
-	}
-
-	// 创建签名后的layer文件
-	outdir := filepath.Dir(args.OutputFile)
-	if len(args.OutputFile) == 0 {
-		outdir = filepath.Dir(args.InputFile)
-	}
-	signed, err := os.CreateTemp(outdir, "signed_*.layer")
+	err = layer.InsertSign(args.OutputFile, args.SignDir)
 	if err != nil {
-		return fmt.Errorf("open signed layer file: %w", err)
-	}
-	defer signed.Close()
-	// 写入头信息
-	n, err := signed.Write([]byte(info.Head))
-	if err != nil {
-		return fmt.Errorf("write head to signed layer file: %w", err)
-	}
-	_, err = signed.Write(bytes.Repeat([]byte{0}, 40-n))
-	if err != nil {
-		return fmt.Errorf("write padding to signed layer file: %w", err)
-	}
-	// 写入metainfo
-	info.Raw = ""
-	info.Head = ""
-	meta, err := json.Marshal(info)
-	if err != nil {
-		return fmt.Errorf("marshal info: %w", err)
-	}
-	err = binary.Write(signed, binary.LittleEndian, uint32(len(meta)))
-	if err != nil {
-		return fmt.Errorf("binary write meta size: %w", err)
-	}
-	_, err = signed.Write(meta)
-	if err != nil {
-		return fmt.Errorf("write meta to signed layer file: %w", err)
-	}
-	// 写入erofs内容
-	_, err = io.CopyN(signed, f, int64(info.ErofsSize))
-	if err != nil {
-		return fmt.Errorf("copy erofs content to signed layer file: %w", err)
-	}
-	// 写入签名数据
-	_, err = signDataBuff.WriteTo(signed)
-	if err != nil {
-		return fmt.Errorf("write sign data to signed layer file: %w", err)
-	}
-	err = signed.Close()
-	if err != nil {
-		return fmt.Errorf("close signed layer file: %w", err)
-	}
-	err = os.Chmod(signed.Name(), 0644)
-	if err != nil {
-		return fmt.Errorf("change mode of signed layer file: %w", err)
-	}
-	if len(args.OutputFile) > 0 {
-		err = os.Rename(signed.Name(), args.OutputFile)
-	} else {
-		err = os.Rename(signed.Name(), args.InputFile)
-	}
-	if err != nil {
-		return fmt.Errorf("rename signed layer file: %w", err)
+		return fmt.Errorf("insert sign: %w", err)
 	}
 	return nil
 }

@@ -159,3 +159,78 @@ func (l *Layer) SaveErofs(outputFile string) error {
 	}
 	return nil
 }
+
+func (l *Layer) InsertSign(outputFile string, signDir string) error {
+	var info = l.meta
+	info.ErofsSize = l.erofsSize
+	// 创建签名数据缓冲区
+	var signDataBuff bytes.Buffer
+	err := tarutils.CreateTar(&signDataBuff, signDir)
+	if err != nil {
+		return fmt.Errorf("create tar file: %w", err)
+	}
+	info.SignSize = uint64(signDataBuff.Len())
+
+	// 创建签名后的layer文件
+	signed, err := os.CreateTemp(filepath.Dir(outputFile), "signed_*.layer")
+	if err != nil {
+		return fmt.Errorf("open signed layer file: %w", err)
+	}
+	defer signed.Close()
+	// 写入头信息
+	n, err := signed.Write([]byte(info.Head))
+	if err != nil {
+		return fmt.Errorf("write head to signed layer file: %w", err)
+	}
+	_, err = signed.Write(bytes.Repeat([]byte{0}, 40-n))
+	if err != nil {
+		return fmt.Errorf("write padding to signed layer file: %w", err)
+	}
+	// 写入metainfo
+	info.Raw = ""
+	info.Head = ""
+	meta, err := json.Marshal(info)
+	if err != nil {
+		return fmt.Errorf("marshal info: %w", err)
+	}
+	err = binary.Write(signed, binary.LittleEndian, uint32(len(meta)))
+	if err != nil {
+		return fmt.Errorf("binary write meta size: %w", err)
+	}
+	_, err = signed.Write(meta)
+	if err != nil {
+		return fmt.Errorf("write meta to signed layer file: %w", err)
+	}
+	f, err := os.Open(l.filepath)
+	if err != nil {
+		return fmt.Errorf("open layer file: %w", err)
+	}
+	defer f.Close()
+	_, err = f.Seek(l.erofsOffset, 0)
+	if err != nil {
+		return fmt.Errorf("seek sign data: %w", err)
+	}
+	// 写入erofs内容
+	_, err = io.CopyN(signed, f, int64(info.ErofsSize))
+	if err != nil {
+		return fmt.Errorf("copy erofs content to signed layer file: %w", err)
+	}
+	// 写入签名数据
+	_, err = signDataBuff.WriteTo(signed)
+	if err != nil {
+		return fmt.Errorf("write sign data to signed layer file: %w", err)
+	}
+	err = signed.Close()
+	if err != nil {
+		return fmt.Errorf("close signed layer file: %w", err)
+	}
+	err = os.Chmod(signed.Name(), 0644)
+	if err != nil {
+		return fmt.Errorf("change mode of signed layer file: %w", err)
+	}
+	err = os.Rename(signed.Name(), outputFile)
+	if err != nil {
+		return fmt.Errorf("rename signed layer file: %w", err)
+	}
+	return nil
+}

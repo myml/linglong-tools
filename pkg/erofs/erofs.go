@@ -10,11 +10,11 @@ import (
 	"strings"
 )
 
-type ErofsFsck struct {
+type ErofsCmd struct {
 	SupportOffset bool
 }
 
-func NewErofsCmd() (*ErofsFsck, error) {
+func NewErofsCmd() (*ErofsCmd, error) {
 	// 检查所需命令行是否存在
 	_, err := exec.LookPath("fsck.erofs")
 	if err != nil {
@@ -24,15 +24,15 @@ func NewErofsCmd() (*ErofsFsck, error) {
 	if err != nil {
 		return nil, fmt.Errorf("exec fsck.erofs --help error: %w %s", err, out)
 	}
-	cmd := ErofsFsck{
+	cmd := ErofsCmd{
 		SupportOffset: strings.Contains(string(out), "--offset="),
 	}
 	return &cmd, nil
 }
 
 // Extract 使用fsck.erofs解压erofs镜像文件
-func (fsck *ErofsFsck) Extract(imgFile, outDir string, offset, length int64) error {
-	if fsck.SupportOffset {
+func (erofs *ErofsCmd) Extract(imgFile, outDir string, offset, length int64) error {
+	if erofs.SupportOffset {
 		out, err := exec.Command("fsck.erofs",
 			fmt.Sprintf("--offset=%d", offset),
 			fmt.Sprintf("--extract=%s", outDir),
@@ -61,9 +61,16 @@ func (fsck *ErofsFsck) Extract(imgFile, outDir string, offset, length int64) err
 	if err != nil {
 		return fmt.Errorf("seek offset error: %w", err)
 	}
-	_, err = io.CopyN(tmpFile, rawFile, length)
-	if err != nil {
-		return fmt.Errorf("copy data error: %w", err)
+	if length == 0 {
+		_, err = io.Copy(tmpFile, rawFile)
+		if err != nil {
+			return fmt.Errorf("copy data error: %w", err)
+		}
+	} else {
+		_, err = io.CopyN(tmpFile, rawFile, length)
+		if err != nil {
+			return fmt.Errorf("copy data error: %w", err)
+		}
 	}
 	err = tmpFile.Close()
 	if err != nil {
@@ -75,6 +82,18 @@ func (fsck *ErofsFsck) Extract(imgFile, outDir string, offset, length int64) err
 	).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("fsck erofs failed: %w %s", err, out)
+	}
+	return nil
+}
+
+// Mkfs 使用mkfs.erofs制作erofs镜像文件
+func (erofs *ErofsCmd) Mkfs(imgFile, dirPath string) error {
+	out, err := exec.Command("mkfs.erofs",
+		imgFile,
+		dirPath,
+	).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("mkfs erofs failed: %w %s", err, out)
 	}
 	return nil
 }

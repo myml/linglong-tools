@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/myml/linglong-tools/pkg/apiserver"
+	"github.com/myml/linglong-tools/internal/apiserver"
 )
 
 const (
