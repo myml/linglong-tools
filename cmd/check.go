@@ -1,17 +1,17 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"text/template"
 
+	"github.com/myml/linglong-tools/pkg/checker"
 	"github.com/myml/linglong-tools/pkg/layer"
+	"github.com/myml/linglong-tools/pkg/types"
 	"github.com/myml/linglong-tools/pkg/uab"
 	"github.com/spf13/cobra"
 )
@@ -21,15 +21,18 @@ type CheckArgs struct {
 	FormatOutput        string
 	CheckSigned         bool
 	CheckSystemdService bool
-	// TODO
-	CheckIcon    bool
-	CheckDesktop bool
+	CheckIcon           bool
+	CheckDesktopFile    bool
+	CheckID             bool
 }
 
 type CheckResult struct {
 	Pass           bool
 	Signed         *CheckResultItem `json:",omitempty"`
 	SystemdService *CheckResultItem `json:",omitempty"`
+	Icon           *CheckResultItem `json:",omitempty"`
+	ID             *CheckResultItem `json:",omitempty"`
+	DesktopFile    *CheckResultItem `json:",omitempty"`
 }
 
 type CheckResultItem struct {
@@ -38,7 +41,7 @@ type CheckResultItem struct {
 }
 
 func initCheckCmd() *cobra.Command {
-	var checkArgs = CheckArgs{}
+	checkArgs := CheckArgs{}
 	checkCmd := cobra.Command{
 		Use:   "check",
 		Short: "Package checker for linypas",
@@ -52,85 +55,151 @@ func initCheckCmd() *cobra.Command {
 
 	checkCmd.Flags().StringVarP(&checkArgs.InputFile, "file", "f", "", "input file")
 	checkCmd.Flags().BoolVar(&checkArgs.CheckSystemdService, "systemd", true, "check systemd service files")
-	checkCmd.Flags().BoolVar(&checkArgs.CheckSigned, "signed", true, "check is signed")
+	checkCmd.Flags().BoolVar(&checkArgs.CheckSigned, "signed", true, "check file is signed or not")
+	checkCmd.Flags().BoolVar(&checkArgs.CheckIcon, "icon", true, "check icon")
+	checkCmd.Flags().BoolVar(&checkArgs.CheckID, "id", true, "check app id is valid or not")
+	checkCmd.Flags().BoolVar(&checkArgs.CheckDesktopFile, "desktop-file", true, "check desktop file is valid or not")
 	checkCmd.Flags().StringVar(&checkArgs.FormatOutput, "format", "", "Format output using a custom template")
-	err := checkCmd.MarkFlagRequired("file")
-	if err != nil {
-		panic(err)
+	if err := checkCmd.MarkFlagRequired("file"); err != nil {
+		log.Fatalf("mark flag required: %v", err)
 	}
 	return &checkCmd
 }
 
 func checkRun(args CheckArgs) error {
-	var result CheckResult
-
-	dir, err := ioutil.TempDir("", "ll-check-")
+	dir, err := os.MkdirTemp("", "ll-check-")
 	if err != nil {
 		return fmt.Errorf("create temp dir failed: %w", err)
 	}
 	defer os.RemoveAll(dir)
-	var in interface {
-		HasSign() bool
-		Extract(outputDir string) error
+
+	extractor, err := newFileExtractor(args.InputFile)
+	if err != nil {
+		return err
 	}
-	switch ext := filepath.Ext(args.InputFile); ext {
-	case ".layer":
-		layerFile, err := layer.NewLayer(args.InputFile)
-		if err != nil {
-			return fmt.Errorf("create layer from file failed: %w", err)
-		}
-		defer layerFile.Close()
-		in = layerFile
-	case ".uab":
-		uabFile, err := uab.Open(args.InputFile)
-		if err != nil {
-			return fmt.Errorf("open uab file: %w", err)
-		}
-		defer uabFile.Close()
-		in = uabFile
-	default:
-		return fmt.Errorf("file type %s is unsupported", args.InputFile)
-	}
-	// 检查是否签名
+	defer extractor.Close()
+
+	result := CheckResult{Pass: true}
+
 	if args.CheckSigned {
-		result.Pass = false
-		result.Signed = &CheckResultItem{Pass: in.HasSign()}
+		result.Signed = &CheckResultItem{Pass: extractor.HasSign()}
+		if !result.Signed.Pass {
+			result.Pass = false
+		}
 	}
-	// 检查systemd service是否合规
-	if args.CheckSystemdService {
-		err = in.Extract(dir)
-		if err != nil {
+
+	if args.CheckDesktopFile || args.CheckID || args.CheckIcon || args.CheckSystemdService {
+		if err := extractor.Extract(dir); err != nil {
 			return fmt.Errorf("extract file failed: %w", err)
 		}
-		cmd := exec.Command("bash")
-		cmd.Dir = dir
-		cmd.Stdin = bytes.NewReader([]byte(`cat info.json | grep kind | grep -v app && exit 0
- find files/lib/systemd | grep "/[a-z]*\.service$" && exit -1 || true`))
-		out, err := cmd.CombinedOutput()
+
+		root := os.DirFS(dir)
+		info, err := loadLayerInfo(root)
 		if err != nil {
-			result.Pass = false
-			result.SystemdService = &CheckResultItem{Pass: false, Message: string(out)}
-		} else {
-			result.SystemdService = &CheckResultItem{Pass: true}
+			return err
+		}
+
+		id := info.ID
+		if id == "" {
+			id = info.Appid
+		}
+
+		if args.CheckID {
+			if err := checker.CheckID(id); err != nil {
+				result.ID = &CheckResultItem{Pass: false, Message: err.Error()}
+				result.Pass = false
+			} else {
+				result.ID = &CheckResultItem{Pass: true}
+			}
+		}
+
+		if args.CheckSystemdService {
+			if err := checker.CheckSystemd(root); err != nil {
+				result.SystemdService = &CheckResultItem{Pass: false, Message: err.Error()}
+				result.Pass = false
+			} else {
+				result.SystemdService = &CheckResultItem{Pass: true}
+			}
+		}
+
+		if args.CheckIcon {
+			if err := checker.CheckIcon(root); err != nil {
+				result.Icon = &CheckResultItem{Pass: false, Message: err.Error()}
+				result.Pass = false
+			} else {
+				result.Icon = &CheckResultItem{Pass: true}
+			}
+		}
+
+		if args.CheckDesktopFile {
+			if err := checker.CheckDesktopFile(root, id); err != nil {
+				result.DesktopFile = &CheckResultItem{Pass: false, Message: err.Error()}
+				result.Pass = false
+			} else {
+				result.DesktopFile = &CheckResultItem{Pass: true}
+			}
 		}
 	}
-	// 自定义模板输出
-	if len(args.FormatOutput) > 0 {
-		tmpl, err := template.New("").Parse(args.FormatOutput)
+
+	return outputResult(result, args.FormatOutput)
+}
+
+type fileExtractor interface {
+	HasSign() bool
+	Extract(outputDir string) error
+	Close() error
+}
+
+func newFileExtractor(filename string) (fileExtractor, error) {
+	switch ext := filepath.Ext(filename); ext {
+	case ".layer":
+		layerFile, err := layer.NewLayer(filename)
+		if err != nil {
+			return nil, fmt.Errorf("create layer from file failed: %w", err)
+		}
+		return layerFile, nil
+	case ".uab":
+		uabFile, err := uab.Open(filename)
+		if err != nil {
+			return nil, fmt.Errorf("open uab file: %w", err)
+		}
+		return uabFile, nil
+	default:
+		return nil, fmt.Errorf("file type %s is unsupported", filename)
+	}
+}
+
+func loadLayerInfo(root fs.FS) (*types.LayerInfo, error) {
+	data, err := fs.ReadFile(root, "files/info.json")
+	if err != nil {
+		return nil, fmt.Errorf("failed to read from info.json: %w", err)
+	}
+
+	var info types.LayerInfo
+	if err := json.Unmarshal(data, &info); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal from info.json: %w", err)
+	}
+
+	return &info, nil
+}
+
+func outputResult(result CheckResult, format string) error {
+	if format != "" {
+		tmpl, err := template.New("").Parse(format)
 		if err != nil {
 			return fmt.Errorf("parse format: %w", err)
 		}
-		err = tmpl.Execute(os.Stdout, result)
-		if err != nil {
+		if err := tmpl.Execute(os.Stdout, result); err != nil {
 			return fmt.Errorf("exec format: %w", err)
 		}
 		return nil
-	} else {
-		data, err := json.Marshal(result)
-		if err != nil {
-			return fmt.Errorf("marshal result: %w", err)
-		}
-		os.Stdout.Write(data)
 	}
+
+	data, err := json.Marshal(result)
+	if err != nil {
+		return fmt.Errorf("marshal result: %w", err)
+	}
+	data = append(data, '\n')
+	os.Stdout.Write(data)
 	return nil
 }

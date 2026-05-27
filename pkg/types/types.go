@@ -13,8 +13,8 @@ type LayerFileMetaInfo struct {
 type ApplicationPermission struct{}
 
 type LayerInfo struct {
-	ID            string                `json:"id"`
-	Appid         string                `json:"appid"`
+	ID            string                `json:"id"`    // PackageInfoV2
+	Appid         string                `json:"appid"` // PackageInfo
 	Arch          []string              `json:"arch"`
 	Base          string                `json:"base"`
 	Description   string                `json:"description"`
