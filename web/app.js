@@ -165,7 +165,6 @@ function searchApps() {
     var channel = document.getElementById('searchChannel').value;
     var arch = document.getElementById('searchArch').value;
     var version = document.getElementById('searchVersion').value.trim();
-    var module = document.getElementById('searchModule').value.trim();
 
     if (!repoName) {
         showToast('请选择仓库', 'error');
@@ -175,43 +174,22 @@ function searchApps() {
     var tableWrapper = document.getElementById('appTable');
     tableWrapper.innerHTML = '<div class="loading">搜索中</div>';
 
-    var hasSearchField = appId || channel || arch || version || module;
+    var body = { repoName: repoName };
+    if (appId) body.appId = appId;
+    if (channel) body.channel = channel;
+    if (arch) body.arch = arch;
+    if (version) body.version = version;
 
-    if (hasSearchField) {
-        var params = new URLSearchParams();
-        params.set('repo_name', repoName);
-        if (channel) params.set('channel', channel);
-        else params.set('channel', '');
-        if (appId) params.set('app_id', appId);
-        else params.set('app_id', '');
-        if (arch) params.set('arch', arch);
-        else params.set('arch', '');
-        if (module) params.set('module', module);
-        else params.set('module', '');
-        if (version) params.set('version', version);
-
-        api('GET', '/api/v2/search/apps?' + params.toString())
-            .then(function(res) {
-                apps = res.data || [];
-                currentPage = 1;
-                renderAppTable();
-            })
-            .catch(function(err) {
-                showToast('搜索失败: ' + err.message, 'error');
-                tableWrapper.innerHTML = '<div class="empty-state">搜索失败</div>';
-            });
-    } else {
-        api('POST', '/api/v0/apps/fuzzysearchapp', { repoName: repoName })
-            .then(function(res) {
-                apps = res.data || [];
-                currentPage = 1;
-                renderAppTable();
-            })
-            .catch(function(err) {
-                showToast('搜索失败: ' + err.message, 'error');
-                tableWrapper.innerHTML = '<div class="empty-state">搜索失败</div>';
-            });
-    }
+    api('POST', '/api/v0/apps/fuzzysearchapp', body)
+        .then(function(res) {
+            apps = res.data || [];
+            currentPage = 1;
+            renderAppTable();
+        })
+        .catch(function(err) {
+            showToast('搜索失败: ' + err.message, 'error');
+            tableWrapper.innerHTML = '<div class="empty-state">搜索失败</div>';
+        });
 }
 
 function renderAppTable() {
