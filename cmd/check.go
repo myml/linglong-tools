@@ -170,7 +170,7 @@ func newFileExtractor(filename string) (fileExtractor, error) {
 }
 
 func loadLayerInfo(root fs.FS) (*types.LayerInfo, error) {
-	data, err := fs.ReadFile(root, "files/info.json")
+	data, err := fs.ReadFile(root, "info.json")
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from info.json: %w", err)
 	}
