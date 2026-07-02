@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/myml/linglong-tools/pkg/layer"
-	"github.com/myml/linglong-tools/pkg/uab"
+	"github.com/myml/linglong-tools/v2/pkg/layer"
+	"github.com/myml/linglong-tools/v2/pkg/uab"
 	"github.com/spf13/cobra"
 )
 

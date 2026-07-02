@@ -9,7 +9,7 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "linglong-tools",
-	Short: "A linglong tools. See https://github.com/myml/linglong-tools/README.md",
+	Short: "A linglong tools. See https://github.com/myml/linglong-tools/v2/README.md",
 }
 
 func Execute() {

@@ -1,4 +1,4 @@
-module github.com/myml/linglong-tools
+module github.com/myml/linglong-tools/v2
 
 go 1.22
 

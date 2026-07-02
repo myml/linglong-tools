@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/myml/linglong-tools/pkg/types"
+	"github.com/myml/linglong-tools/v2/pkg/types"
 	"github.com/stretchr/testify/require"
 )
 

@@ -6,7 +6,7 @@ package main
 import (
 	"log"
 
-	"github.com/myml/linglong-tools/cmd"
+	"github.com/myml/linglong-tools/v2/cmd"
 )
 
 func main() {

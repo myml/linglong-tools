@@ -14,7 +14,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/myml/linglong-tools/internal/apiserver"
+	"github.com/myml/linglong-tools/v2/internal/apiserver"
 	"github.com/spf13/cobra"
 )
 

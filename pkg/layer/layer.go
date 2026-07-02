@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/myml/linglong-tools/pkg/erofs"
-	"github.com/myml/linglong-tools/pkg/tarutils"
-	"github.com/myml/linglong-tools/pkg/types"
+	"github.com/myml/linglong-tools/v2/pkg/erofs"
+	"github.com/myml/linglong-tools/v2/pkg/tarutils"
+	"github.com/myml/linglong-tools/v2/pkg/types"
 )
 
 // ParseMetaInfo parse layer metainfo

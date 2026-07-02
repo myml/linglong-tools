@@ -19,11 +19,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/myml/linglong-tools/internal/apiserver"
-	"github.com/myml/linglong-tools/pkg/layer"
-	"github.com/myml/linglong-tools/pkg/tarutils"
-	"github.com/myml/linglong-tools/pkg/types"
-	"github.com/myml/linglong-tools/pkg/uab"
+	"github.com/myml/linglong-tools/v2/internal/apiserver"
+	"github.com/myml/linglong-tools/v2/pkg/layer"
+	"github.com/myml/linglong-tools/v2/pkg/tarutils"
+	"github.com/myml/linglong-tools/v2/pkg/types"
+	"github.com/myml/linglong-tools/v2/pkg/uab"
 	"github.com/spf13/cobra"
 )
 

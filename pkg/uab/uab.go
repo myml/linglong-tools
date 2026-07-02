@@ -12,9 +12,9 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/myml/linglong-tools/pkg/erofs"
-	"github.com/myml/linglong-tools/pkg/tarutils"
-	"github.com/myml/linglong-tools/pkg/types"
+	"github.com/myml/linglong-tools/v2/pkg/erofs"
+	"github.com/myml/linglong-tools/v2/pkg/tarutils"
+	"github.com/myml/linglong-tools/v2/pkg/types"
 )
 
 type UAB struct {
