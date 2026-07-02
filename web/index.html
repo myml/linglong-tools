@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玲珑仓库管理</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <h1>玲珑仓库管理</h1>
+            <div class="header-actions">
+                <button id="loginBtn" class="btn btn-primary" onclick="showLoginModal()">登录</button>
+                <span id="loginStatus" class="login-status"></span>
+            </div>
+        </header>
+
+        <main class="main">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2>仓库列表</h2>
+                    <button class="btn btn-sm" onclick="loadRepos()" title="刷新">↻</button>
+                </div>
+                <div id="repoList" class="repo-list">
+                    <div class="empty-state">点击刷新加载仓库列表</div>
+                </div>
+            </aside>
+
+            <section class="content">
+                <div class="content-header">
+                    <div class="search-bar">
+                        <select id="searchRepo" class="select">
+                            <option value="">选择仓库</option>
+                        </select>
+                        <input type="text" id="searchAppId" placeholder="应用ID" class="input">
+                        <select id="searchChannel" class="select">
+                            <option value="">频道</option>
+                            <option value="main">main</option>
+                            <option value="testing">testing</option>
+                        </select>
+                        <select id="searchArch" class="select">
+                            <option value="">架构</option>
+                            <option value="x86_64">x86_64</option>
+                            <option value="aarch64">aarch64</option>
+                        </select>
+                        <input type="text" id="searchVersion" placeholder="版本" class="input">
+                        <input type="text" id="searchModule" placeholder="模块" class="input">
+                        <button class="btn btn-primary" onclick="searchApps()">搜索</button>
+                    </div>
+                    <div class="action-bar">
+                        <button class="btn btn-success" onclick="showUploadModal()">上传应用</button>
+                    </div>
+                </div>
+
+                <div id="appTable" class="app-table-wrapper">
+                    <div class="empty-state">请选择仓库并搜索应用</div>
+                </div>
+
+                <div id="pagination" class="pagination" style="display:none;"></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="loginModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>登录</h3>
+                <span class="modal-close" onclick="closeModal('loginModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="loginUsername" class="input" placeholder="用户名">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="loginPassword" class="input" placeholder="密码">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('loginModal')">取消</button>
+                <button class="btn btn-primary" onclick="doLogin()">登录</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>上传应用</h3>
+                <span class="modal-close" onclick="closeModal('uploadModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>目标仓库</label>
+                    <select id="uploadRepo" class="select"></select>
+                </div>
+                <div class="form-group">
+                    <label>Ref (格式: channel/appId/version/arch/module)</label>
+                    <input type="text" id="uploadRef" class="input" placeholder="main/com.example.app/1.0.0/x86_64/runtime">
+                </div>
+                <div class="form-group">
+                    <label>上传文件 (.uab 或 .tar.gz)</label>
+                    <input type="file" id="uploadFile" class="input-file" accept=".uab,.tar.gz,.tgz,.layer">
+                </div>
+                <div id="uploadProgress" class="upload-progress" style="display:none;">
+                    <div class="progress-bar">
+                        <div id="uploadProgressBar" class="progress-fill"></div>
+                    </div>
+                    <div id="uploadStatus" class="upload-status-text"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('uploadModal')">取消</button>
+                <button class="btn btn-success" id="uploadSubmitBtn" onclick="doUpload()">上传</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal" style="display:none;">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>确认删除</h3>
+                <span class="modal-close" onclick="closeModal('confirmModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p id="confirmText"></p>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="confirmHardDelete"> 硬删除 (hard delete)
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('confirmModal')">取消</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">确认删除</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
