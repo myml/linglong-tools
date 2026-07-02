@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	DefaultRepoUrl  = "https://repo.linglong.dev"
+	DefaultRepoUrl  = "https://mirror-repo-linglong.deepin.com"
 	DefaultRepoName = "stable"
 	DefaultChannel  = "main"
 	DefaultModule   = "binary"
