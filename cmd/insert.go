@@ -163,7 +163,11 @@ func insert2Layer(args InsertArgs) error {
 	if err != nil {
 		return fmt.Errorf("open layer file: %w", err)
 	}
-	err = layer.InsertSign(args.OutputFile, args.SignDir)
+	outputFile := args.OutputFile
+	if len(outputFile) == 0 {
+		outputFile = args.InputFile
+	}
+	err = layer.InsertSign(outputFile, args.SignDir)
 	if err != nil {
 		return fmt.Errorf("insert sign: %w", err)
 	}
