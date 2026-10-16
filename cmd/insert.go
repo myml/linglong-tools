@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/myml/linglong-tools/v2/pkg/layer"
@@ -22,7 +21,7 @@ type InsertArgs struct {
 }
 
 func initInsertCmd() *cobra.Command {
-	var signArgs = InsertArgs{}
+	signArgs := InsertArgs{}
 	signCmd := cobra.Command{
 		Use:   "insert",
 		Short: "Add sign files to linglong uab file",
@@ -81,7 +80,7 @@ func preSignDiectory(dir string) error {
 		_, err = os.Stat(tierDir)
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
-				err := os.Mkdir(tierDir, 0755)
+				err := os.Mkdir(tierDir, 0o755)
 				if err != nil {
 					return fmt.Errorf("create tier dir %s failed: %w", tierDir, err)
 				}
@@ -118,10 +117,6 @@ func CopyFile(src, dst string) error {
 }
 
 func insert2UAB(args InsertArgs) error {
-	_, err := exec.LookPath("objcopy")
-	if err != nil {
-		return errors.New("objcopy not found")
-	}
 	info, err := os.Stat(args.SignDir)
 	if err != nil {
 		return fmt.Errorf("stat directory %s: %w", args.SignDir, err)
@@ -131,22 +126,27 @@ func insert2UAB(args InsertArgs) error {
 		return fmt.Errorf("%s isn't a directory", args.SignDir)
 	}
 
-	uab, err := uab.Open(args.InputFile)
-	if err != nil {
-		return fmt.Errorf("open uab file: %w", err)
-	}
-	defer uab.Close()
-
 	err = preSignDiectory(args.SignDir)
 	if err != nil {
 		return fmt.Errorf("preSignDiectory failed: %w", err)
 	}
+
+	targetFile := args.InputFile
 	if len(args.OutputFile) > 0 {
 		err = CopyFile(args.InputFile, args.OutputFile)
 		if err != nil {
 			return fmt.Errorf("copy file failed: %w", err)
 		}
+
+		targetFile = args.OutputFile
 	}
+
+	uab, err := uab.Open(targetFile)
+	if err != nil {
+		return fmt.Errorf("open uab file: %w", err)
+	}
+	defer uab.Close()
+
 	// 如果不存在签名，则更新改为false，避免更新失败
 	if args.Update && !uab.HasSign() {
 		args.Update = false
