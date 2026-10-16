@@ -1,20 +1,23 @@
 package uab
 
 import (
+	"bytes"
+	"debug/elf"
 	"encoding/binary"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-const testMetaJson = `{
+const (
+	letterBytes  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	testMetaJson = `{
     "digest": "7ffaf77c13d8fe94f824a9974e5f30911429df52825ba624a3b70b91b8f67876",
     "layers": [
         {
@@ -66,6 +69,7 @@ const testMetaJson = `{
     "uuid": "b2e7aab7-290d-44ef-b94d-9a04a49a25f4",
     "version": "1"
 }`
+)
 
 type UABTestSuite struct {
 	TmpUAB string
@@ -86,7 +90,7 @@ func generateMinimalUAB(root string, bundle string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("Error creating file: %w", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	info, err := os.Stat(bundle)
 	if err != nil {
@@ -166,7 +170,7 @@ func generateMinimalUAB(root string, bundle string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("Error opening bundle: %w", err)
 	}
-	defer bundleF.Close()
+	defer func() { _ = bundleF.Close() }()
 	bundleFInfo, err := bundleF.Stat()
 	if err != nil {
 		return "", fmt.Errorf("stat bundle file: %w", err)
@@ -224,7 +228,7 @@ func generateMinimalUAB(root string, bundle string) (string, error) {
 	binary.LittleEndian.PutUint64(sectionHeader[48:], 1)                          // addralign
 	binary.LittleEndian.PutUint64(sectionHeader[56:], 0)                          // entsize
 
-	//linglong.meta
+	// linglong.meta
 	sectionNameOffset += len(bundleSection)
 	binary.LittleEndian.PutUint32(sectionHeader[64:], uint32(sectionNameOffset))
 	binary.LittleEndian.PutUint32(sectionHeader[68:], 1)
@@ -260,7 +264,7 @@ func generateMinimalUAB(root string, bundle string) (string, error) {
 
 func generateMinimalBundle(root string) (string, error) {
 	bundleDir := filepath.Join(root, "bundle")
-	err := os.MkdirAll(bundleDir, 0755)
+	err := os.MkdirAll(bundleDir, 0o755)
 	if err != nil {
 		return "", fmt.Errorf("failed to create directory %s: %w", bundleDir, err)
 	}
@@ -268,14 +272,14 @@ func generateMinimalBundle(root string) (string, error) {
 	// binary
 	data := genData(1024 * 1024)
 	binPath := filepath.Join(bundleDir, "fake-loader")
-	err = os.WriteFile(binPath, data, 0644)
+	err = os.WriteFile(binPath, data, 0o644)
 	if err != nil {
 		return "", fmt.Errorf("failed to create binary %s: %w", binPath, err)
 	}
 
 	// sub directory
 	extraDir := filepath.Join(bundleDir, "subDir")
-	err = os.MkdirAll(extraDir, 0755)
+	err = os.MkdirAll(extraDir, 0o755)
 	if err != nil {
 		return "", fmt.Errorf("failed to create directory %s: %w", extraDir, err)
 	}
@@ -292,7 +296,7 @@ func generateMinimalBundle(root string) (string, error) {
 		tmpData := genData(1024 * 256)
 		tmpName := "test-file-" + string(tmpData[:4]) + ".txt"
 		tmpFile := filepath.Join(extraDir, tmpName)
-		err = os.WriteFile(tmpFile, data, 0644)
+		err = os.WriteFile(tmpFile, data, 0o644)
 		if err != nil {
 			return "", fmt.Errorf("failed to writeFile %s: %w", tmpFile, err)
 		}
@@ -321,14 +325,100 @@ func (suite *UABTestSuite) TestExtract() {
 
 	uabFile, err := Open(suite.TmpUAB)
 	assert.NoError(err)
-	defer uabFile.Close()
+	defer func() { _ = uabFile.Close() }()
 
-	extractDir, err := ioutil.TempDir("", "test-extract-*")
+	extractDir, err := os.MkdirTemp("", "test-extract-*")
 	assert.NoError(err)
-	defer os.RemoveAll(extractDir)
+	defer func() { _ = os.RemoveAll(extractDir) }()
 
 	err = uabFile.Extract(extractDir)
 	assert.NoError(err)
+}
+
+func (suite *UABTestSuite) TestInsertSign() {
+	assert := suite.Require()
+
+	data, err := os.ReadFile(suite.TmpUAB)
+	assert.NoError(err)
+	signedUAB := filepath.Join(suite.T().TempDir(), "signed.uab")
+	assert.NoError(os.WriteFile(signedUAB, data, 0o644))
+
+	signDir := suite.T().TempDir()
+	assert.NoError(os.WriteFile(filepath.Join(signDir, "hello.txt"), []byte("hello sign"), 0o644))
+
+	u, err := Open(signedUAB)
+	assert.NoError(err)
+	defer func() { _ = u.Close() }()
+
+	assert.False(u.HasSign())
+	assert.Zero(u.SignSize())
+
+	assert.NoError(u.InsertSign(signDir, false))
+	assert.True(u.HasSign())
+	assert.NotZero(u.SignSize())
+
+	assert.Error(u.InsertSign(signDir, false))
+	assert.NoError(u.InsertSign(signDir, true))
+
+	extractDir := suite.T().TempDir()
+	assert.NoError(u.ExtractSign(extractDir))
+	content, err := os.ReadFile(filepath.Join(extractDir, "hello.txt"))
+	assert.NoError(err)
+	assert.Equal([]byte("hello sign"), content)
+
+	bundleDir := suite.T().TempDir()
+	assert.NoError(u.Extract(bundleDir))
+}
+
+func (suite *UABTestSuite) TestUpdateSignResize() {
+	assert := suite.Require()
+
+	data, err := os.ReadFile(suite.TmpUAB)
+	assert.NoError(err)
+	uabPath := filepath.Join(suite.T().TempDir(), "resize.uab")
+	assert.NoError(os.WriteFile(uabPath, data, 0o644))
+
+	bigDir := suite.T().TempDir()
+	assert.NoError(os.WriteFile(filepath.Join(bigDir, "big.bin"), bytes.Repeat([]byte("x"), 64*1024), 0o644))
+	smallDir := suite.T().TempDir()
+	assert.NoError(os.WriteFile(filepath.Join(smallDir, "small.bin"), []byte("small"), 0o644))
+
+	u, err := Open(uabPath)
+	assert.NoError(err)
+	defer func() { _ = u.Close() }()
+
+	assert.NoError(u.InsertSign(bigDir, false))
+	bigSign := u.SignSize()
+	bigSize := fileSize(suite.T(), uabPath)
+	shstrOffset := shstrtabOffset(suite.T(), uabPath)
+	assert.NotZero(shstrOffset)
+
+	assert.NoError(u.InsertSign(smallDir, true))
+	assert.Less(u.SignSize(), bigSign)
+	assert.Less(fileSize(suite.T(), uabPath), bigSize)
+	assert.Equal(shstrOffset, shstrtabOffset(suite.T(), uabPath))
+
+	assert.NoError(u.InsertSign(bigDir, true))
+	assert.Equal(bigSign, u.SignSize())
+	assert.Equal(bigSize, fileSize(suite.T(), uabPath))
+	assert.Equal(shstrOffset, shstrtabOffset(suite.T(), uabPath))
+}
+
+func fileSize(t *testing.T, path string) int64 {
+	t.Helper()
+	info, err := os.Stat(path)
+	require.NoError(t, err)
+	return info.Size()
+}
+
+func shstrtabOffset(t *testing.T, path string) uint64 {
+	t.Helper()
+	ef, err := elf.Open(path)
+	require.NoError(t, err)
+	defer func() { _ = ef.Close() }()
+	section := ef.Section(".shstrtab")
+	require.NotNil(t, section)
+	return section.Offset
 }
 
 func TestUABTestSuite(t *testing.T) {
@@ -337,16 +427,11 @@ func TestUABTestSuite(t *testing.T) {
 		t.Skip("mkfs.erofs not found")
 	}
 
-	_, err = exec.LookPath("objcopy")
-	if err != nil {
-		t.Skip("objcopy not found")
-	}
-
-	temp, err := ioutil.TempDir("", "test-uabBundle-*")
+	temp, err := os.MkdirTemp("", "test-uabBundle-*")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %s", err.Error())
 	}
-	defer os.RemoveAll(temp)
+	defer func() { _ = os.RemoveAll(temp) }()
 
 	bundleFile, err := generateMinimalBundle(temp)
 	if err != nil {
